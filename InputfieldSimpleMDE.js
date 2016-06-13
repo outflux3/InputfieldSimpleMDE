@@ -28,11 +28,6 @@ $(window).load(function(){
 					  "table", "horizontal-rule", "code", "|",
 					  "guide"
 					  ],
-		 //    autosave: {
-   //  			enabled: true,
-   //  			uniqueId: thisID,
-   //  			delay: 1000,
-			// },
 			spellChecker: false
 		});
 	});
