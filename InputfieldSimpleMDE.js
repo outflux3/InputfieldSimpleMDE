@@ -37,11 +37,19 @@ var initSimpleMDE = function() {
 
 }
 
+/**
+ * Init the field on page load
+ */
 $(window).load(function(){
-	$('.InputfieldSimpleMDEField').each(initSimpleMDE);
+    $('.InputfieldSimpleMDEField').each(initSimpleMDE);
 });
 
-
-$(document).on('wiretabclick', function() {
+/**
+ * Re-init for fields that are now visible due to:
+ *     - opening a tab with a hidden field, making it visible
+ *     - opening an accordion with a hidden field, making it visible
+ *     - opening a field that was closed
+ */
+$(document).on('wiretabclick reloaded opened', function() {
     $('.InputfieldSimpleMDEField').each(initSimpleMDE);
 });
