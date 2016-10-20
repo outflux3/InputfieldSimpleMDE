@@ -22,25 +22,26 @@ header:o[1].replace(/^ *| *\| *$/g,"").split(/ *\| */),align:o[2].replace(/^ *|\
 
 var initSimpleMDE = function() {
 	var thisID = $(this).attr('id');
-	var simplemde = new SimpleMDE({
-		element: document.getElementById(thisID),
-		toolbar: ["bold", "italic", "heading", "|",
-				  "quote", "unordered-list", "ordered-list", "|",
-				  "link", "image", "|",
-				  "preview", "side-by-side", "fullscreen", "|",
-				  "table", "horizontal-rule", "code", "|",
-				  "guide"
-				  ],
-		spellChecker: false,
-		promptURLs: true,
-		///forceSync: true,
-	});
+    var simplemde = new SimpleMDE({
+        element: document.getElementById(thisID),
+        toolbar: ["bold", "italic", "heading", "|",
+                  "quote", "unordered-list", "ordered-list", "|",
+                  "link", "image", "|",
+                  "preview", "side-by-side", "fullscreen", "|",
+                  "table", "horizontal-rule", "code", "|",
+                  "guide"
+                  ],
+        spellChecker: false,
+        promptURLs: true,
+    });
+
 }
 
 $(window).load(function(){
 	$('.InputfieldSimpleMDEField').each(initSimpleMDE);
 });
 
-//$('.InputfieldStateWasCollapsed .InputfieldSimpleMDEField').each(initSimpleMDE);
 
-
+$(document).on('wiretabclick', function() {
+    $('.InputfieldSimpleMDEField').each(initSimpleMDE);
+});
