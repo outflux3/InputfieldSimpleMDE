@@ -14,7 +14,7 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
      public static function getModuleInfo() {
 	  return array(
 		  'title' => 'Simple Markdown Editor',
-		  'version' => 102,
+		  'version' => 104,
 		  'summary' => 'SimpleMDE Markdown Editor for Processwire',
 		  'icon' => 'star',
 		  'autoload' => 'template=admin',
