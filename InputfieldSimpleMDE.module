@@ -3,7 +3,7 @@
 /**
  * ProcessWire InputfieldSimpleMDE
  *
- * @author Macrura
+ * @author Macrura / outflux3
  * @see https://github.com/NextStepWebs/simplemde-markdown-editor
  *
  *
@@ -20,6 +20,20 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
 		  'autoload' => 'template=admin',
 		  );
      }
+
+    /**
+     * Per the Module interface, Initialize the Process, loading any related CSS or JS files
+     *
+     */
+    public function init() {
+        parent::init();
+        $name = $this->classname();
+        $info = $this->getModuleInfo();
+        $version = (int) $info['version'];
+        $this->config->styles->add($this->config->urls->$name . "simplemde.min.css?v=$version");
+        $this->config->scripts->add($this->config->urls->$name . "simplemde.min.js?v=$version");
+    }
+
 
 	public function ___render() {
 		return parent::___render();
