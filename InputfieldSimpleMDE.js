@@ -46,7 +46,7 @@ var initSimpleMDE = function() {
  * Init the field on page load
  */
 $(window).load(function(){
-	$('.InputfieldSimpleMDEField').each(initSimpleMDE);
+    $('.InputfieldSimpleMDEField').each(initSimpleMDE);
 });
 
 /**
