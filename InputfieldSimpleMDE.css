@@ -11,3 +11,11 @@
 .CodeMirror-fullscreen .CodeMirror-scroll {
     max-height: none;
 }
+
+.CodeMirror-fullscreen {
+	z-index: 12;
+}
+
+.editor-toolbar.fullscreen {
+	z-index: 13;
+}
