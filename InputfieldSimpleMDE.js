@@ -21,6 +21,7 @@ var initSimpleMDE = function() {
 			spellChecker: false,
 			promptURLs: true,
 		});
+		$(this).data('simplemde', simplemde);
 	}
 }
 
