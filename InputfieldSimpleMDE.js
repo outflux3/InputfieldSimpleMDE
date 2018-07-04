@@ -38,7 +38,7 @@ $(window).load(function(){
  *     - opening an accordion with a hidden field, making it visible
  *     - opening a field that was closed
  */
-$(document).on('wiretabclick reloaded opened repeateradd', function() {
+$(document).on('wiretabclick reloaded opened repeateradd tabsactivate', function() {
 	$('.InputfieldSimpleMDEField').each(initSimpleMDE);
 });
 
