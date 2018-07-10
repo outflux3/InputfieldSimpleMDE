@@ -42,4 +42,8 @@ $(document).on('wiretabclick reloaded opened repeateradd tabsactivate', function
 	$('.InputfieldSimpleMDEField').each(initSimpleMDE);
 });
 
-
+$(document).ready(function() { 
+	$(document).on('click', '.AdminThemeUikit .langTabs ul li a', function() {
+		$('.InputfieldSimpleMDEField').each(initSimpleMDE);
+	});
+}); 
