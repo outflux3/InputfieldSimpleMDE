@@ -14,7 +14,7 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
      public static function getModuleInfo() {
 	  return array(
 		  'title' => 'Simple Markdown Editor',
-		  'version' => 107,
+		  'version' => 108,
 		  'summary' => 'SimpleMDE Markdown Editor for Processwire',
 		  'icon' => 'star',
 		  'autoload' => 'template=admin',
@@ -53,7 +53,7 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
 		if($key == 'maxlength' && !(int) $value) $value = ''; // blank string prevents a maxlength='0' attribute
 
 		if($key == 'value') {
-			$value = trim($value);
+			if($value) $value = trim($value);
 			$maxlength = (int) $this->attr('maxlength');
 			if($maxlength > 0) $value = substr($value, 0, $maxlength); 
 		}
