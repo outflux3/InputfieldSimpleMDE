@@ -1,59 +1,76 @@
-<?php
+<?php namespace ProcessWire;
 
 /**
  * ProcessWire InputfieldSimpleMDE
  *
- * @author Macrura / outflux3
- * @see https://github.com/NextStepWebs/simplemde-markdown-editor
+ * A Markdown editor inputfield, built on EasyMDE.
  *
+ * @author Macrura / outflux3
+ * @license MIT (see LICENSE)
+ * @see https://github.com/Ionaru/easy-markdown-editor
+ *
+ * NOTE ON THE NAME
+ * The module is still called InputfieldSimpleMDE because renaming the class
+ * would orphan every field already using it. The editor it ships is EasyMDE,
+ * the maintained fork of the abandoned SimpleMDE. See README.md.
  *
  */
 
 class InputfieldSimpleMDE extends InputfieldTextarea {
 
-     public static function getModuleInfo() {
-	  return array(
-		  'title' => 'Simple Markdown Editor',
-		  'version' => 110,
-		  'summary' => 'SimpleMDE Markdown Editor for Processwire',
-		  'icon' => 'star',
-		  'autoload' => 'template=admin',
-		  );
-     }
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Simple Markdown Editor',
+			'version' => 200,
+			'summary' => 'Markdown editor (EasyMDE) for ProcessWire',
+			'icon' => 'star',
+			'requires' => 'ProcessWire>=3.0.0, PHP>=5.4.0',
+			'autoload' => 'template=admin',
+			);
+	}
 
-    /**
-     * Per the Module interface, Initialize the Process, loading any related CSS or JS files
-     *
-     */
-    public function init() {
-        parent::init();
-        $name = $this->classname();
-        $info = $this->getModuleInfo();
-        $version = (int) $info['version'];
-        $this->config->styles->add($this->config->urls->$name . "simplemde.min.css?v=$version");
-        $this->config->scripts->add($this->config->urls->$name . "simplemde.min.js?v=$version");
+	/**
+	 * Per the Module interface, initialize the Inputfield and load its assets
+	 *
+	 */
+	public function init() {
+		parent::init();
 
-        /**
-         * REPEATER FIX. The vendor library was loaded here, but this module's
-         * OWN InputfieldSimpleMDE.js was not — ProcessWire adds a module's file
-         * assets from Inputfield::renderReady(), which only runs when the field
-         * actually renders.
-         *
-         * Inside a repeater that is fatal. With every item collapsed, no
-         * InputfieldSimpleMDE renders on page load, so the init script never
-         * reaches the page; opening an item then injects a textarea by AJAX
-         * with nothing present to turn it into an editor. It appeared to work
-         * only when some item happened to be open at load, which is why it
-         * looked intermittent.
-         *
-         * loadModuleFileAssets() is the same call renderReady() makes, so the
-         * URL is byte-identical and $config->scripts de-duplicates instead of
-         * loading the file twice. This module is autoload=template=admin, so
-         * this runs on every admin request whether a field renders or not.
-         */
-        $this->wire()->modules->loadModuleFileAssets($this);
-    }
+		$name = $this->className();
+		$info = self::getModuleInfo();
+		$version = (int) $info['version'];
+		$url = $this->wire()->config->urls->$name;
 
+		$this->wire()->config->styles->add($url . "easymde/easymde.min.css?v=$version");
+		$this->wire()->config->scripts->add($url . "easymde/easymde.min.js?v=$version");
+
+		/**
+		 * REPEATER FIX. The vendor library was loaded here, but this module's
+		 * OWN InputfieldSimpleMDE.js was not — ProcessWire adds a module's file
+		 * assets from Inputfield::renderReady(), which only runs when the field
+		 * actually renders.
+		 *
+		 * Inside a repeater that is fatal. With every item collapsed, no
+		 * InputfieldSimpleMDE renders on page load, so the init script never
+		 * reaches the page; opening an item then injects a textarea by AJAX
+		 * with nothing present to turn it into an editor. It appeared to work
+		 * only when some item happened to be open at load, which is why it
+		 * looked intermittent.
+		 *
+		 * loadModuleFileAssets() is the same call renderReady() makes, so the
+		 * URL is byte-identical and $config->scripts de-duplicates instead of
+		 * loading the file twice. This module is autoload=template=admin, so
+		 * this runs on every admin request whether a field renders or not.
+		 *
+		 * COST: the library loads on every admin request, not only on pages
+		 * holding an MDE field. That is deliberate. Gating it on the current
+		 * Process would drop it in exactly the cases that are hard to predict
+		 * (custom Process modules, third parties such as FieldDescriptionsExtended
+		 * that ask for the library themselves), and this module's job is to work
+		 * everywhere without per-site tuning.
+		 */
+		$this->wire()->modules->loadModuleFileAssets($this);
+	}
 
 	public function ___render() {
 		return parent::___render();
@@ -61,10 +78,15 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
 
 	public function getAttributes() {
 		$attrs = parent::getAttributes();
-		if(empty($attrs['size'])) {
-			unset($attrs['size']);
-			$attrs['class'] = (empty($attrs['class']) ? '' : $attrs['class'] . ' ') . 'InputfieldMaxWidth InputfieldSimpleMDEField';
-		}
+
+		// Marker class for the JS. Unconditional: the previous version only added
+		// it when 'size' was empty, a guard inherited from InputfieldText that is
+		// meaningless here — InputfieldTextarea::___render() unsets 'size' itself.
+		// A stray size attribute would have silently disabled the whole editor.
+		$attrs['class'] = (empty($attrs['class']) ? '' : $attrs['class'] . ' ')
+			. 'InputfieldMaxWidth InputfieldSimpleMDEField';
+		unset($attrs['size']);
+
 		return $attrs;
 	}
 
@@ -75,10 +97,10 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
 		if($key == 'value') {
 			if($value) $value = trim($value);
 			$maxlength = (int) $this->attr('maxlength');
-			if($maxlength > 0) $value = substr($value, 0, $maxlength); 
+			if($maxlength > 0) $value = substr($value, 0, $maxlength);
 		}
 
-		return parent::setAttribute($key, $value); 
+		return parent::setAttribute($key, $value);
 	}
 
 }

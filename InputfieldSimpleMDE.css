@@ -1,21 +1,62 @@
+/**
+ * InputfieldSimpleMDE
+ *
+ * EasyMDE wraps the editor in .EasyMDEContainer and scopes its own rules to it,
+ * so overrides need that container in the selector too. Bare .CodeMirror rules
+ * (0,1,0) lose to EasyMDE's .EasyMDEContainer .CodeMirror (0,2,0) regardless of
+ * load order — the fullscreen z-index below is exactly that case.
+ */
 
-.CodeMirror,
-.CodeMirror-scroll {
-    max-height: 300px;
+/* Cap the editing area; the fields are markdown, not manuscripts. */
+.EasyMDEContainer .CodeMirror,
+.EasyMDEContainer .CodeMirror-scroll {
+	max-height: 300px;
 }
 
-.CodeMirror-fullscreen.CodeMirror {
-    max-height: none;
+.EasyMDEContainer .CodeMirror-fullscreen,
+.EasyMDEContainer .CodeMirror-fullscreen .CodeMirror-scroll {
+	max-height: none;
 }
 
-.CodeMirror-fullscreen .CodeMirror-scroll {
-    max-height: none;
+/**
+ * Fullscreen and side-by-side have to clear the admin chrome.
+ *
+ * EasyMDE ships z-index 8 on the editor and 9 on the toolbar and preview pane.
+ * This module previously raised those to 12 and 13, which was never enough:
+ * AdminThemeUikit's sticky masthead is .uk-sticky at 980, so fullscreen always
+ * opened underneath it. Sit above the masthead but below Uikit's modals (1010)
+ * and notifications (1040), which should still be able to cover the editor.
+ */
+.EasyMDEContainer .CodeMirror-fullscreen {
+	z-index: 1000;
 }
 
-.CodeMirror-fullscreen {
-	z-index: 12;
+.editor-toolbar.fullscreen,
+.editor-preview-side {
+	z-index: 1001;
 }
 
-.editor-toolbar.fullscreen {
-	z-index: 13;
+/**
+ * ...but z-index only competes within a stacking context, and a repeater item or
+ * a positioned Inputfield creates one — the editor would be lifted to the top of
+ * its own little box and no further. InputfieldSimpleMDE.js flags the ancestor
+ * chain while fullscreen is active so each link gets out of the way in turn.
+ *
+ * These rules apply ONLY while fullscreen is open. Raising an ancestor is not
+ * free — position + z-index creates a stacking context that then confines the
+ * editor — so the lift has to clear the masthead on its own, and must not be
+ * left in place the rest of the time.
+ */
+.Inputfield.has-simplemde-fullscreen,
+.InputfieldRepeater.has-simplemde-fullscreen,
+.InputfieldRepeaterItem.has-simplemde-fullscreen {
+	position: relative;
+	z-index: 1000 !important;
+}
+
+/* Image edit panels use a filter, which creates a stacking context of its own
+   that a fixed-position child cannot escape. */
+body.simplemde-fullscreen .InputfieldImageEdit__inner {
+	filter: none !important;
+	-webkit-filter: none !important;
 }
