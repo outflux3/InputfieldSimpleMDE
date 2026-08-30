@@ -493,6 +493,56 @@
 	});
 
 	// ====================================================================
+	// Heading scale
+	// ====================================================================
+
+	describe('Heading scale');
+
+	it('does not resize the line for a Field Descriptions Extended divider', async function() {
+		// FDE separates the visible and hidden halves of a description with a
+		// line of dashes. By the CommonMark spec that makes the line above it a
+		// setext heading, and EasyMDE's theme scales headings to 2.5x — so the
+		// first line of every extended description ballooned. SimpleMDE parsed
+		// it identically but never styled it, so this had never been seen.
+		var editor = editorOf('ta-visible');
+		editor.codemirror.setValue('Visible part of the description.\n-----\nHidden extended part.');
+		document.getElementById('fx-visible').scrollIntoView();
+		await sleep(300);
+
+		var wrapper = editor.codemirror.getWrapperElement();
+		var header = wrapper.querySelector('.cm-header');
+		ok(header, 'the divider should still be parsed as a heading (parsing is not what changed)');
+
+		var base = parseFloat(getComputedStyle(wrapper.querySelector('.CodeMirror-line')).fontSize);
+		var actual = parseFloat(getComputedStyle(header).fontSize);
+		ok(Math.abs(actual - base) < 0.5,
+			'heading font-size should match body text (' + base + 'px), got ' + actual + 'px');
+	});
+
+	it('still marks headings bold, as SimpleMDE did', function() {
+		// Only the size is reset. Losing the weight too would make headings
+		// invisible, which SimpleMDE never did.
+		var wrapper = editorOf('ta-visible').codemirror.getWrapperElement();
+		var header = wrapper.querySelector('.cm-header');
+		var weight = getComputedStyle(header).fontWeight;
+		ok(parseInt(weight, 10) >= 600, 'heading font-weight should still be bold, got ' + weight);
+	});
+
+	it('leaves a real ATX heading unscaled too', async function() {
+		var editor = editorOf('ta-opt-nested');
+		editor.codemirror.setValue('# A real heading\n\nBody text.');
+		document.getElementById('fx-opt-nested').scrollIntoView();
+		await sleep(300);
+
+		var wrapper = editor.codemirror.getWrapperElement();
+		var header = wrapper.querySelector('.cm-header-1');
+		ok(header, 'the ATX heading should be parsed as cm-header-1');
+		var base = parseFloat(getComputedStyle(wrapper.querySelector('.CodeMirror-line')).fontSize);
+		ok(Math.abs(parseFloat(getComputedStyle(header).fontSize) - base) < 0.5,
+			'h1 font-size should match body text');
+	});
+
+	// ====================================================================
 	// Observer behaviour
 	// ====================================================================
 

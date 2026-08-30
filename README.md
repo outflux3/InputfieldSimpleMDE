@@ -147,6 +147,9 @@ Two things to be aware of if you have customised it:
 - **Custom CSS.** EasyMDE wraps the editor in `.EasyMDEContainer` and scopes its
   own rules to it, so a bare `.CodeMirror { ... }` override of yours now loses on
   specificity. Prefix such rules with `.EasyMDEContainer`.
+- **Heading sizes.** If you *want* EasyMDE's larger headings in the editor,
+  re-add `font-size` to `.cm-s-easymde .cm-header-1` … `-6` in your admin CSS;
+  the module resets them to match body text so the editor looks as it did.
 - **The vendor files moved.** `simplemde.min.js` / `simplemde.min.css` at the
   module root are gone, replaced by `easymde/easymde.min.js` and
   `easymde/easymde.min.css`. Anything hard-coding those paths needs updating.
@@ -172,6 +175,12 @@ Two things to be aware of if you have customised it:
   are ignored and scans are coalesced per animation frame, so typing no longer
   triggers a document scan per keystroke.
 - Editors are released when their field genuinely leaves the document.
+- Kept SimpleMDE's heading appearance. EasyMDE's theme scales headings to as
+  much as 2.5x body text; SimpleMDE never styled their size at all. That is
+  most noticeable where the Markdown is incidental — a line of dashes used as a
+  divider is a setext heading by the CommonMark spec, so the line above it was
+  suddenly enormous. Headings stay bold, as they always were. Override
+  `.cm-s-easymde .cm-header-N` in your admin CSS to get the scaling back.
 - Added a `LICENSE` for the module itself (MIT).
 
 ### 1.1.0

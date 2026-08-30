@@ -60,3 +60,44 @@ body.simplemde-fullscreen .InputfieldImageEdit__inner {
 	filter: none !important;
 	-webkit-filter: none !important;
 }
+
+/**
+ * Heading scale — restore what SimpleMDE showed.
+ *
+ * SimpleMDE ran CodeMirror's "paper" theme and shipped no .cm-header-N
+ * font-size rules at all: headings were parsed but never resized. EasyMDE runs
+ * its own "easymde" theme and scales them hard —
+ * .cm-s-easymde .cm-header-1 is calc(1.375rem + 1.5vw), about 41px against 13px
+ * body text at a typical admin width, and it grows with the viewport.
+ *
+ * That is a real change in an editor nobody asked to look different, and it is
+ * worst where the Markdown is incidental. Field Descriptions Extended uses a
+ * line of dashes as a section divider:
+ *
+ *     Visible part of the description.
+ *     -----
+ *     Hidden extended part.
+ *
+ * By the CommonMark spec that is a setext heading — text underlined with
+ * dashes — so CodeMirror marks BOTH lines cm-header-2 and the description's
+ * first line balloons to 2.5x. The parsing is correct and unchanged; only the
+ * styling is new.
+ *
+ * Only font-size and line-height are reset. CodeMirror's own base stylesheet
+ * sets font-weight:700 on .cm-header, and SimpleMDE bundled that too, so
+ * headings stayed bold before and still do — they remain visible, they just
+ * stop resizing the line.
+ *
+ * Same specificity as EasyMDE's rules and loaded after them, which is what
+ * decides it. To get the scaling back, override these in your admin CSS.
+ */
+.cm-s-easymde .cm-header-1,
+.cm-s-easymde .cm-header-2,
+.cm-s-easymde .cm-header-3,
+.cm-s-easymde .cm-header-4,
+.cm-s-easymde .cm-header-5,
+.cm-s-easymde .cm-header-6 {
+	font-size: inherit;
+	line-height: inherit;
+	margin-bottom: 0;
+}
