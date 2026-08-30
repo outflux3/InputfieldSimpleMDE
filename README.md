@@ -94,8 +94,24 @@ If you have a Content Security Policy or a privacy audit that flagged
 `maxcdn.bootstrapcdn.com`, this is where it came from.
 
 Note that a module constructing the editor itself — via the `window.SimpleMDE`
-alias, as Field Descriptions Extended does — bypasses these defaults and needs
-to pass `autoDownloadFontAwesome: false` in its own options.
+alias — bypasses these defaults and needs to pass `autoDownloadFontAwesome:
+false` in its own options. Field Descriptions Extended does construct its own,
+and passes it.
+
+### The spell checker
+
+`spellChecker` is `false` by default, and that is the only reason the editor
+makes no other outbound request. Enabled, the bundled spell checker fetches its
+dictionaries from `cdn.jsdelivr.net` at runtime — two files per editor, from a
+third party, in your admin.
+
+The browser's own spell checking is on regardless (`nativeSpellcheck`), works
+offline, and already knows the editor's language, so there is rarely a reason to
+turn the bundled one on. If you do, do it knowingly:
+
+```
+"spellChecker": true
+```
 
 ## How the editor gets initialised
 
