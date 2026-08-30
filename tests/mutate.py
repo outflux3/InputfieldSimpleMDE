@@ -64,13 +64,17 @@ MUTATIONS = [
     ("fullscreen ancestors not lifted", CSS,
      "\tposition: relative;\n\tz-index: 1000 !important;", "\tposition: static;", "js"),
 
-    ("EasyMDE heading scaling left in place", CSS,
-     "\tfont-size: inherit;\n\tline-height: inherit;\n\tmargin-bottom: 0;",
-     "\tmargin-bottom: 0;", "js"),
+    ("EasyMDE viewport-relative heading sizes left in place", CSS,
+     ".cm-s-easymde .cm-header-1 { font-size: 1.6em; }",
+     ".cm-s-easymde .cm-header-1 { font-size: calc(1.375rem + 1.5vw); }", "js"),
 
-    ("heading weight reset along with the size", CSS,
-     "\tfont-size: inherit;\n\tline-height: inherit;",
-     "\tfont-size: inherit;\n\tline-height: inherit;\n\tfont-weight: normal;", "js"),
+    ("headings flattened to body size", CSS,
+     ".cm-s-easymde .cm-header-2 { font-size: 1.4em; }",
+     ".cm-s-easymde .cm-header-2 { font-size: 1em; }", "js"),
+
+    ("heading weight lost", CSS,
+     "\tline-height: 1.3;\n\tmargin-bottom: 0;",
+     "\tline-height: 1.3;\n\tmargin-bottom: 0;\n\tfont-weight: normal;", "js"),
 
     ("old size guard restored", PHP,
      "\t\t$attrs['class'] = (empty($attrs['class']) ? '' : $attrs['class'] . ' ')\n"

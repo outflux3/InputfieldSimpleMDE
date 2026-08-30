@@ -62,42 +62,54 @@ body.simplemde-fullscreen .InputfieldImageEdit__inner {
 }
 
 /**
- * Heading scale — restore what SimpleMDE showed.
+ * Heading scale — sane, and independent of the viewport.
  *
- * SimpleMDE ran CodeMirror's "paper" theme and shipped no .cm-header-N
- * font-size rules at all: headings were parsed but never resized. EasyMDE runs
- * its own "easymde" theme and scales them hard —
- * .cm-s-easymde .cm-header-1 is calc(1.375rem + 1.5vw), about 41px against 13px
- * body text at a typical admin width, and it grows with the viewport.
+ * Headings should look like headings; that is Markdown convention and the
+ * editor ought to reflect what you wrote. What EasyMDE ships is the problem:
  *
- * That is a real change in an editor nobody asked to look different, and it is
- * worst where the Markdown is incidental. Field Descriptions Extended uses a
- * line of dashes as a section divider:
+ *     .cm-s-easymde .cm-header-1 { font-size: calc(1.375rem + 1.5vw) }
+ *
+ * That is 33px against 13px body text at 1280px, over 40px on a wide monitor,
+ * and it RESCALES as the window changes — a viewport-relative unit inside a
+ * fixed-width admin field, where nothing else behaves that way. SimpleMDE
+ * shipped no heading sizes at all, so upgrading turned a flat editor into one
+ * where a single line could take up a quarter of the field.
+ *
+ * Fixed em multiples instead: proportional to the field's own text, stable at
+ * every window size, and enough to read the structure at a glance.
+ *
+ * Worth knowing where this shows up unexpectedly. Field Descriptions Extended
+ * separates the visible and hidden halves of a description with a line of
+ * dashes:
  *
  *     Visible part of the description.
  *     -----
  *     Hidden extended part.
  *
- * By the CommonMark spec that is a setext heading — text underlined with
- * dashes — so CodeMirror marks BOTH lines cm-header-2 and the description's
- * first line balloons to 2.5x. The parsing is correct and unchanged; only the
- * styling is new.
- *
- * Only font-size and line-height are reset. CodeMirror's own base stylesheet
- * sets font-weight:700 on .cm-header, and SimpleMDE bundled that too, so
- * headings stayed bold before and still do — they remain visible, they just
- * stop resizing the line.
+ * By the CommonMark spec, text underlined with dashes is a setext heading, so
+ * CodeMirror marks both lines cm-header-2 and the first line grows. That is
+ * correct parsing and it always parsed this way — SimpleMDE just never styled
+ * it. It affects the editor only: FDE splits on the literal `-----` before any
+ * Markdown rendering, so the stored description still outputs as a paragraph.
+ * Putting a blank line before the divider makes it a horizontal rule instead,
+ * which is what it was always meant to be.
  *
  * Same specificity as EasyMDE's rules and loaded after them, which is what
- * decides it. To get the scaling back, override these in your admin CSS.
+ * decides it.
  */
+.cm-s-easymde .cm-header-1 { font-size: 1.6em; }
+.cm-s-easymde .cm-header-2 { font-size: 1.4em; }
+.cm-s-easymde .cm-header-3 { font-size: 1.2em; }
+.cm-s-easymde .cm-header-4 { font-size: 1.1em; }
+.cm-s-easymde .cm-header-5,
+.cm-s-easymde .cm-header-6 { font-size: 1em; }
+
 .cm-s-easymde .cm-header-1,
 .cm-s-easymde .cm-header-2,
 .cm-s-easymde .cm-header-3,
 .cm-s-easymde .cm-header-4,
 .cm-s-easymde .cm-header-5,
 .cm-s-easymde .cm-header-6 {
-	font-size: inherit;
-	line-height: inherit;
+	line-height: 1.3;
 	margin-bottom: 0;
 }
