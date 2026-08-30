@@ -106,6 +106,24 @@ InputfieldSimpleMDE.instance('Inputfield_body')   // the EasyMDE object for a fi
 The EasyMDE instance is also on the textarea element itself, as
 `element.simplemdeInstance`.
 
+## Tests
+
+`tests/run.sh` runs a browser suite and a PHP suite. Neither needs anything
+installed beyond Chrome, Python 3 and PHP.
+
+```
+cd tests
+./run.sh              # both suites
+./run.sh --open       # open the browser suite in your own browser
+./run.sh --mutate     # check the suites can actually fail
+```
+
+`tests/MANUAL.md` lists the handful of checks that need a real admin — the Field
+Descriptions Extended integration, a save round-trip, real repeater AJAX,
+language tabs, fullscreen in other admin themes, and the upgrade path.
+
+See [tests/README.md](tests/README.md) for how it works.
+
 ## Interoperability
 
 **Other modules calling `new SimpleMDE(...)`.** The library this module loads is
