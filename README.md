@@ -20,8 +20,11 @@ ProcessWire 3.0 or newer, PHP 5.4 or newer.
 
 ## Installation
 
-Copy the module folder to `/site/modules/InputfieldSimpleMDE/`, then Modules →
-Refresh → Install.
+In the admin, Modules → Add New, and install by class name
+`InputfieldSimpleMDE`.
+
+Or install manually: copy the module folder to
+`/site/modules/InputfieldSimpleMDE/`, then Modules → Refresh → Install.
 
 ## Usage
 
