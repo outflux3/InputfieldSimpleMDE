@@ -205,7 +205,6 @@
 		// On the element, not in a data-attribute: nothing to stringify and
 		// nothing for a .data() cache to coerce.
 		el.simplemdeInstance = instance;
-		tracked.push(el);
 		built++;
 
 		bridgeChanges(el, instance);
@@ -221,8 +220,15 @@
 	 * Re-measure when the editor first becomes visible. Covers a collapsed
 	 * field, a closed repeater item and an unopened language tab without
 	 * knowing which of them it was.
+	 *
+	 * Also the re-adoption path: an editor released by collect() and then put
+	 * back in the document gets picked up again here, so it keeps being
+	 * measured. Idempotent, so scan() can call it on anything.
 	 */
 	function watch(el) {
+		if(el.simplemdeWatched) return;
+		el.simplemdeWatched = true;
+		if(tracked.indexOf(el) === -1) tracked.push(el);
 		if(!('IntersectionObserver' in window)) return;
 		var wrap = el.simplemdeInstance.codemirror.getWrapperElement();
 		if(!wrap) return;
@@ -246,7 +252,14 @@
 	function scan(root) {
 		var nodes = (root || document).querySelectorAll(SELECTOR);
 		for(var i = 0; i < nodes.length; i++) {
-			if(!isBuilt(nodes[i])) build(nodes[i]);
+			if(!isBuilt(nodes[i])) {
+				build(nodes[i]);
+			} else if(!nodes[i].simplemdeWatched) {
+				// Released while detached, and now back in the document — an
+				// item moved across two ticks rather than within one. Without
+				// this it would keep its editor but never be measured again.
+				watch(nodes[i]);
+			}
 		}
 		return nodes.length;
 	}
@@ -255,9 +268,11 @@
 	 * Release editors whose textarea has genuinely left the document, so the
 	 * IntersectionObserver stops holding detached nodes.
 	 *
-	 * Deferred to the rAF flush on purpose: sorting a repeater detaches and
-	 * reinserts an item within the same tick, and destroying an editor
-	 * mid-drag would be worse than the leak.
+	 * A same-tick move is safe without any deferral, because a MutationObserver
+	 * callback already runs after the whole tick — the item is back before this
+	 * ever sees it. A move split across two ticks is the real case, and is
+	 * handled by scan() re-adopting the editor rather than by trying to hold off
+	 * here: releasing is cheap and reversible, guessing is not.
 	 */
 	function collect() {
 		for(var i = tracked.length - 1; i >= 0; i--) {
@@ -267,6 +282,7 @@
 				var wrap = el.simplemdeInstance.codemirror.getWrapperElement();
 				if(wrap) seen.unobserve(wrap);
 			}
+			el.simplemdeWatched = false;
 			tracked.splice(i, 1);
 		}
 	}
