@@ -1,0 +1,14 @@
+# Keep development-only files out of the distributed package.
+#
+# `export-ignore` applies to `git archive`, which is what GitHub's "Download
+# ZIP" and release tarballs use — and therefore what the ProcessWire modules
+# directory hands people. The files stay in the repository, versioned and
+# clonable; they simply do not ship inside the module.
+#
+# This is what .gitignore cannot do: .gitignore only affects files git is not
+# already tracking, so adding tests/ there would have no effect on committed
+# files, while silently swallowing any NEW test file added later.
+tests/          export-ignore
+.gitattributes  export-ignore
+.gitignore      export-ignore
+_legacy/        export-ignore
