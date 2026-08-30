@@ -14,7 +14,7 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
      public static function getModuleInfo() {
 	  return array(
 		  'title' => 'Simple Markdown Editor',
-		  'version' => 108,
+		  'version' => 110,
 		  'summary' => 'SimpleMDE Markdown Editor for Processwire',
 		  'icon' => 'star',
 		  'autoload' => 'template=admin',
@@ -32,6 +32,26 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
         $version = (int) $info['version'];
         $this->config->styles->add($this->config->urls->$name . "simplemde.min.css?v=$version");
         $this->config->scripts->add($this->config->urls->$name . "simplemde.min.js?v=$version");
+
+        /**
+         * REPEATER FIX. The vendor library was loaded here, but this module's
+         * OWN InputfieldSimpleMDE.js was not — ProcessWire adds a module's file
+         * assets from Inputfield::renderReady(), which only runs when the field
+         * actually renders.
+         *
+         * Inside a repeater that is fatal. With every item collapsed, no
+         * InputfieldSimpleMDE renders on page load, so the init script never
+         * reaches the page; opening an item then injects a textarea by AJAX
+         * with nothing present to turn it into an editor. It appeared to work
+         * only when some item happened to be open at load, which is why it
+         * looked intermittent.
+         *
+         * loadModuleFileAssets() is the same call renderReady() makes, so the
+         * URL is byte-identical and $config->scripts de-duplicates instead of
+         * loading the file twice. This module is autoload=template=admin, so
+         * this runs on every admin request whether a field renders or not.
+         */
+        $this->wire()->modules->loadModuleFileAssets($this);
     }
 
 
