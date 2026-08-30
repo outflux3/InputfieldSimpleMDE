@@ -51,29 +51,31 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
 		$this->wire()->config->scripts->add($url . "easymde/easymde.min.js?v=$version");
 
 		/**
-		 * REPEATER FIX. The vendor library was loaded here, but this module's
-		 * OWN InputfieldSimpleMDE.js was not — ProcessWire adds a module's file
-		 * assets from Inputfield::renderReady(), which only runs when the field
-		 * actually renders.
+		 * Load this module's OWN js/css here, not only from renderReady().
 		 *
-		 * Inside a repeater that is fatal. With every item collapsed, no
-		 * InputfieldSimpleMDE renders on page load, so the init script never
-		 * reaches the page; opening an item then injects a textarea by AJAX
-		 * with nothing present to turn it into an editor. It appeared to work
-		 * only when some item happened to be open at load, which is why it
-		 * looked intermittent.
+		 * ProcessWire adds a module's file assets from Inputfield::renderReady(),
+		 * which runs only when the field actually renders. Doing it here as well
+		 * means the init script is on every admin page, whether or not anything
+		 * rendered — which is consistent with the vendor library above, and means
+		 * a textarea arriving later by AJAX always has something waiting for it.
 		 *
-		 * loadModuleFileAssets() is the same call renderReady() makes, so the
-		 * URL is byte-identical and $config->scripts de-duplicates instead of
-		 * loading the file twice. This module is autoload=template=admin, so
-		 * this runs on every admin request whether a field renders or not.
+		 * A NOTE ON WHAT THIS DOES AND DOES NOT FIX. This was originally added
+		 * believing it was the cause of the collapsed-repeater bug. Measuring it
+		 * says otherwise: a repeater renders a hidden prototype item, and even an
+		 * AJAX-collapsed one still takes its inner fields through renderReady(),
+		 * so the assets arrived by that route regardless. On any page holding an
+		 * InputfieldSimpleMDE field at all, this call is redundant. The repeater
+		 * bug was actually fixed by the rewrite of InputfieldSimpleMDE.js — the
+		 * old double-init guard compared jQuery .data() against the string
+		 * 'true' after .data() had already coerced it to a boolean, so it never
+		 * held, and initialisation depended on guessing the right PW event.
 		 *
-		 * COST: the library loads on every admin request, not only on pages
-		 * holding an MDE field. That is deliberate. Gating it on the current
-		 * Process would drop it in exactly the cases that are hard to predict
-		 * (custom Process modules, third parties such as FieldDescriptionsExtended
-		 * that ask for the library themselves), and this module's job is to work
-		 * everywhere without per-site tuning.
+		 * It is kept because it is cheap and it removes a whole class of
+		 * ordering question, and because loadModuleFileAssets() is what
+		 * renderReady() calls, so $config->scripts de-duplicates rather than
+		 * loading anything twice. site/_dev-tests/mde-matrix.php asserts the
+		 * assets are present on a page with no Markdown field on it, which is
+		 * the only scenario that isolates this call.
 		 */
 		$this->wire()->modules->loadModuleFileAssets($this);
 	}

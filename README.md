@@ -78,11 +78,19 @@ ProcessWire inputfields do.
 
 The module is `autoload => 'template=admin'` and loads its assets from `init()`
 rather than `renderReady()`. ProcessWire only calls `renderReady()` when a field
-actually renders, and inside a collapsed repeater no field renders on page load —
-so the init script never reached the page, and opening an item later injected a
-textarea by AJAX with nothing present to turn it into an editor. It appeared to
-work only when some item happened to be open at load, which is why the failure
-looked intermittent.
+actually renders, so loading here as well puts the init script on every admin
+page whether or not anything rendered, and a textarea arriving later by AJAX
+always has something waiting for it.
+
+This is belt-and-braces rather than the fix for the collapsed-repeater bug,
+despite how it looks. Measurement says a repeater renders a hidden prototype
+item and even an AJAX-collapsed one still takes its inner fields through
+`renderReady()`, so on any page holding a Markdown field the assets arrive that
+way regardless. The repeater bug was actually fixed by the rewrite of
+`InputfieldSimpleMDE.js`: the old double-init guard compared jQuery `.data()`
+against the string `'true'` after `.data()` had already coerced it to a boolean,
+so it never held, and initialisation depended on guessing which ProcessWire
+event would fire and when.
 
 The trade-off is that EasyMDE loads on every admin request, not only on pages
 holding a Markdown field. That is deliberate: gating it on the current Process
