@@ -14,6 +14,8 @@
  * would orphan every field already using it. The editor it ships is EasyMDE,
  * the maintained fork of the abandoned SimpleMDE. See README.md.
  *
+ * @property string $mde_options Per-field EasyMDE options as a JSON fragment
+ *
  */
 
 class InputfieldSimpleMDE extends InputfieldTextarea {
@@ -35,6 +37,10 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
 	 */
 	public function init() {
 		parent::init();
+
+		// Per-field EasyMDE options, as a JSON fragment. A setting rather than an
+		// attribute, so it is never emitted onto the textarea by getAttributesString().
+		$this->set('mde_options', '');
 
 		$name = $this->className();
 		$info = self::getModuleInfo();
@@ -87,6 +93,12 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
 			. 'InputfieldMaxWidth InputfieldSimpleMDEField';
 		unset($attrs['size']);
 
+		// Per-field options travel on the element itself rather than in
+		// ProcessWire.config, so an AJAX-loaded repeater item and each textarea of
+		// a multi-language field carry their own config with no lookup by name.
+		$options = trim((string) $this->mde_options);
+		if(strlen($options)) $attrs['data-mde-options'] = $options;
+
 		return $attrs;
 	}
 
@@ -101,6 +113,41 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
 		}
 
 		return parent::setAttribute($key, $value);
+	}
+
+	/**
+	 * Field configuration
+	 *
+	 * Purely additive: an empty value renders exactly as the module did before this
+	 * option existed. Whatever is entered here is merged OVER the JS defaults, so a
+	 * field that sets only one key keeps the stock toolbar for everything else.
+	 *
+	 */
+	public function ___getConfigInputfields() {
+		$inputfields = parent::___getConfigInputfields();
+
+		/** @var InputfieldTextarea $f */
+		$f = $this->wire()->modules->get('InputfieldTextarea');
+		$f->attr('name', 'mde_options');
+		$f->label = $this->_('EasyMDE options');
+		$f->description = sprintf(
+			$this->_('Optional. Leave blank to use the default toolbar and settings. Options are merged over the defaults, so you only need the keys you want to change. Enter them in JSON format, with keys in double quotes. See the [EasyMDE documentation](%s).'),
+			'https://github.com/Ionaru/easy-markdown-editor#configuration'
+		);
+		$f->notes = $this->_('Example:') . "\n```\n\"toolbar\": [\"bold\", \"italic\", \"heading\", \"|\", \"preview\"],\n\"sideBySideFullscreen\": false\n```";
+		$f->attr('value', $this->mde_options);
+		$f->collapsed = Inputfield::collapsedBlank;
+		$inputfields->add($f);
+
+		return $inputfields;
+	}
+
+	/**
+	 * Allow the options to be set per template context
+	 *
+	 */
+	public function ___getConfigAllowContext($field) {
+		return array_merge(parent::___getConfigAllowContext($field), array('mde_options'));
 	}
 
 }

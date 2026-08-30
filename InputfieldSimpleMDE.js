@@ -29,7 +29,8 @@
 
 	/**
 	 * Stock configuration. Deliberately the same three options the SimpleMDE
-	 * version used, so the editor behaves as it always has.
+	 * version used, so a field with no per-field config behaves as it always
+	 * has. Per-field JSON is merged OVER this, never instead of it.
 	 */
 	var DEFAULTS = {
 		toolbar: ["bold", "italic", "heading", "|",
@@ -44,7 +45,7 @@
 
 	var CHANGE_DELAY = 250; // debounce for the ProcessWire dirty-state ping
 
-	var built = 0, refreshed = 0, failed = 0, flushed = 0;
+	var built = 0, refreshed = 0, failed = 0, badConfig = 0, flushed = 0;
 	var seen = null;     // IntersectionObserver, when supported
 	var queued = false;  // rAF scheduled
 	var tracked = [];    // textareas holding a live editor, for cleanup
@@ -78,11 +79,54 @@
 	alias();
 
 	/**
-	 * Build the option set for one textarea.
+	 * Parse the configured options, accepting either a complete JSON object or a
+	 * bare fragment ("toolbar": [...]), which is how the field config describes
+	 * it.
+	 *
+	 * Tried as written first, and only wrapped in braces if that fails. Stripping
+	 * the outer braces up front — the obvious approach — silently eats the
+	 * closing brace of a fragment that ENDS in a nested object, e.g.
+	 * `"renderingConfig": {"singleLineBreaks": false}`.
+	 *
+	 * Returns null rather than throwing: a typo in one field's config must cost
+	 * you the option, not the editor.
+	 */
+	function parseOptions(raw) {
+		var attempts = [raw, '{' + raw + '}'];
+		for(var i = 0; i < attempts.length; i++) {
+			try {
+				var parsed = JSON.parse(attempts[i]);
+				if(parsed && typeof parsed === 'object' && !(parsed instanceof Array)) return parsed;
+			} catch(e) { /* try the next form */ }
+		}
+		return null;
+	}
+
+	/**
+	 * Per-field options off the element's data-mde-options attribute.
+	 *
+	 * Accepts either a full JSON object or a bare fragment ("toolbar": [...]),
+	 * matching how the field config describes it. Bad JSON is reported and
+	 * ignored rather than taking the editor down with it — a typo in one
+	 * field's config must not cost you the editor.
 	 */
 	function optionsFor(el) {
 		var options = {}, key;
 		for(key in DEFAULTS) if(DEFAULTS.hasOwnProperty(key)) options[key] = DEFAULTS[key];
+
+		var raw = el.getAttribute('data-mde-options');
+		if(raw && raw.replace(/\s/g, '').length) {
+			var custom = parseOptions(raw);
+			if(custom) {
+				for(key in custom) if(custom.hasOwnProperty(key)) options[key] = custom[key];
+			} else {
+				badConfig++;
+				if(window.console) {
+					console.error('InputfieldSimpleMDE: could not parse options, using defaults', el, raw);
+				}
+			}
+		}
+
 		options.element = el;
 		return options;
 	}
@@ -322,6 +366,7 @@
 				built: built,
 				refreshed: refreshed,
 				failed: failed,
+				badConfig: badConfig,
 				// A scan triggered by a DOM change. Should NOT climb while you
 				// type — if it does, the CodeMirror mutation filter is leaking.
 				flushed: flushed,
