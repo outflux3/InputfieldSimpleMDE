@@ -70,6 +70,32 @@ The defaults are:
 | `toolbar` | bold, italic, heading, quote, lists, link, image, preview, side-by-side, fullscreen, table, horizontal rule, code, guide |
 | `spellChecker` | `false` (the browser's native spellcheck still applies) |
 | `promptURLs` | `true` |
+| `autoDownloadFontAwesome` | `false` — see below |
+
+### FontAwesome
+
+The toolbar icons are FontAwesome classes, so they render in whatever
+FontAwesome your admin already loads. Install
+[FontAwesome Pro](https://processwire.com/modules/font-awesome-pro/) and the
+toolbar picks up its styling automatically, with nothing to configure.
+
+The module sets `autoDownloadFontAwesome: false` deliberately. Left unset, the
+library looks for a stylesheet whose href contains
+`//maxcdn.bootstrapcdn.com/font-awesome/` and, not finding one, appends a
+`<link>` to that CDN. It only recognises FontAwesome served from that single
+host, so a locally hosted copy — which is what every ProcessWire admin theme
+uses — never satisfies the check, and it fires on every page. It also runs per
+editor, so a page with ten Markdown fields appended ten of them.
+
+That means an outbound request from your admin to a third-party host on every
+page load. SimpleMDE behaved identically, so any site that ran an earlier
+version of this module was doing it too; it had simply never been switched off.
+If you have a Content Security Policy or a privacy audit that flagged
+`maxcdn.bootstrapcdn.com`, this is where it came from.
+
+Note that a module constructing the editor itself — via the `window.SimpleMDE`
+alias, as Field Descriptions Extended does — bypasses these defaults and needs
+to pass `autoDownloadFontAwesome: false` in its own options.
 
 ## How the editor gets initialised
 
@@ -191,6 +217,10 @@ Two things to be aware of if you have customised it:
   browser window, which no other part of a fixed-width admin field does.
   SimpleMDE never styled heading sizes at all. Headings are now 1.6em down to
   1em, proportional to the field's own text and stable at any window size.
+- Stopped fetching FontAwesome from a third-party CDN. The library only ever
+  recognised FontAwesome loaded from `maxcdn.bootstrapcdn.com`, so a locally
+  hosted copy never counted and it appended a `<link>` to that CDN on every
+  page, once per editor. SimpleMDE did the same, so this predates the fork.
 - Added a `LICENSE` for the module itself (MIT).
 
 ### 1.1.0

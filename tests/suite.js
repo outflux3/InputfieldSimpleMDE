@@ -268,7 +268,13 @@
 		host.appendChild(ta);
 		document.body.appendChild(host);
 
-		var editor = new window.SimpleMDE({ element: ta, toolbar: ['bold'], spellChecker: false });
+		// Constructed directly, so the module's DEFAULTS do not apply — which is
+		// exactly how other modules use the alias. autoDownloadFontAwesome is
+		// passed explicitly so this probe does not itself reach out to a CDN and
+		// invalidate the assertion below.
+		var editor = new window.SimpleMDE({
+			element: ta, toolbar: ['bold'], spellChecker: false, autoDownloadFontAwesome: false
+		});
 		ok(!!editor.codemirror, 'constructed editor should expose .codemirror');
 		eq(editor.value(), '# via the alias', 'editor value');
 
@@ -675,6 +681,16 @@
 		var r = InputfieldSimpleMDE.report();
 		eq(r.withoutEditor, 0, 'textareas left without an editor');
 		eq(r.textareasFound, r.withEditor, 'textareasFound vs withEditor');
+	});
+
+	it('never reaches out to a third-party CDN', function() {
+		// Left to itself the library appends a <link> to
+		// maxcdn.bootstrapcdn.com for FontAwesome, once per editor, on every
+		// page — it only recognises FontAwesome served from that exact host, so
+		// the admin's own local copy never satisfies the check. An outbound
+		// request from a client site's admin to a host nobody chose.
+		var links = document.querySelectorAll('link[href*="bootstrapcdn"], link[href*="maxcdn"]');
+		eq(links.length, 0, 'CDN stylesheets appended by the editor');
 	});
 
 	it('recorded no build failures', function() {

@@ -33,6 +33,29 @@
 	 * has. Per-field JSON is merged OVER this, never instead of it.
 	 */
 	var DEFAULTS = {
+		/**
+		 * Never fetch FontAwesome from a third-party CDN.
+		 *
+		 * Left unset, the library looks for a stylesheet whose href contains
+		 * "//maxcdn.bootstrapcdn.com/font-awesome/" and, not finding one,
+		 * appends a <link> to that CDN. It only recognises FontAwesome served
+		 * from that one host, so a locally hosted copy — which is what every
+		 * ProcessWire admin theme uses — never counts, and the check fails on
+		 * every page. Worse, it runs per editor: a page with ten Markdown
+		 * fields appended ten of them here before this was set.
+		 *
+		 * That is an outbound request from the admin of every site running this
+		 * module, to a host nobody chose, loading a FontAwesome 4 that can
+		 * fight with the admin's own. SimpleMDE did exactly the same thing, so
+		 * this is not new with EasyMDE — it has simply never been switched off.
+		 *
+		 * The admin already provides FontAwesome, which is why the toolbar
+		 * picks up FontAwesome Pro's styling when that module is installed. A
+		 * field that genuinely needs the download can set
+		 * "autoDownloadFontAwesome": true in its options.
+		 */
+		autoDownloadFontAwesome: false,
+
 		toolbar: ["bold", "italic", "heading", "|",
 				  "quote", "unordered-list", "ordered-list", "|",
 				  "link", "image", "|",

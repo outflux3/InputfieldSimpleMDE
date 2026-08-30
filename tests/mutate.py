@@ -37,6 +37,9 @@ MUTATIONS = [
      "\t\t\twindow.SimpleMDE = window.EasyMDE;\n\t\t}",
      "\t\t/* alias removed by mutation test */", "js"),
 
+    ("FontAwesome CDN download left enabled", JS,
+     "\t\tautoDownloadFontAwesome: false,", "\t\t/* left to the library */", "js"),
+
     ("no change bridge", JS,
      "\t\tbridgeChanges(el, instance);", "\t\t/* bridge removed */", "js"),
 
