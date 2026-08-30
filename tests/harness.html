@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>InputfieldSimpleMDE test harness</title>
+
+<link rel="stylesheet" href="../easymde/easymde.min.css">
+<link rel="stylesheet" href="../InputfieldSimpleMDE.css">
+
+<style>
+	body { font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; padding: 20px 24px 60px; color: #222; }
+	h1 { font-size: 16px; margin: 0 0 4px; }
+	.sub { color: #666; margin: 0 0 16px; }
+	#summary { font: 600 14px/1.4 ui-monospace, Menlo, monospace; padding: 10px 14px; border-radius: 5px; background: #eee; margin-bottom: 16px; }
+	#summary.pass { background: #d8f3dc; color: #14532d; }
+	#summary.fail { background: #ffd9d9; color: #7f1d1d; }
+	#results { list-style: none; margin: 0 0 24px; padding: 0; font: 12px/1.6 ui-monospace, Menlo, monospace; }
+	#results li { padding: 3px 0 3px 8px; border-left: 3px solid transparent; }
+	#results li.ok { border-left-color: #2d8a4e; }
+	#results li.no { border-left-color: #c22; background: #fff4f4; }
+	#results .tag { display: inline-block; width: 46px; font-weight: 700; }
+	#results li.ok .tag { color: #2d8a4e; }
+	#results li.no .tag { color: #c22; }
+	#results .why { color: #a11; padding-left: 54px; display: block; white-space: pre-wrap; }
+	#results .grp { border: 0; margin: 14px 0 2px; padding: 0; color: #888; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; font-size: 10px; }
+
+	/* Fixtures are kept on the page (not hidden) so a human running this in a
+	   real browser can poke at the editors after the suite finishes. */
+	#fixtures { border-top: 1px solid #ddd; padding-top: 16px; }
+	#fixtures h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #888; margin: 0 0 12px; }
+	.Inputfield { margin: 0 0 18px; padding: 10px 12px; border: 1px solid #e2e2e2; border-radius: 4px; }
+	.Inputfield > label { display: block; font-weight: 600; font-size: 11px; color: #555; margin-bottom: 6px; }
+	.InputfieldStateChanged { border-color: #e0a800; background: #fffdf5; }
+</style>
+</head>
+<body>
+
+<h1>InputfieldSimpleMDE test harness</h1>
+<p class="sub">
+	Runs against the real EasyMDE build and the real <code>InputfieldSimpleMDE.js</code>.
+	Open this file directly in a browser, or run <code>tests/run.sh</code> for a headless pass/fail.
+</p>
+
+<div id="summary">RUNNING…</div>
+<ol id="results"></ol>
+
+<div id="fixtures">
+<h2>Fixtures</h2>
+
+<!--
+	Wrapped in .InputfieldForm because that is the selector core's change
+	tracking is delegated on, and .InputfieldFormConfirm because that is what
+	the navigate-away confirmation looks for. See pw-stub.js.
+-->
+<form class="InputfieldForm InputfieldFormConfirm" data-confirm="Are you sure?" onsubmit="return false">
+
+	<!-- Present at parse time: exercised by the module's initial scan. -->
+
+	<div class="Inputfield" id="fx-visible">
+		<label>Visible field</label>
+		<textarea id="ta-visible" class="InputfieldMaxWidth InputfieldSimpleMDEField" name="visible">Visible at load.</textarea>
+	</div>
+
+	<div class="Inputfield" id="fx-hidden" style="display:none">
+		<label>Hidden at load (collapsed field / closed repeater item)</label>
+		<textarea id="ta-hidden" class="InputfieldMaxWidth InputfieldSimpleMDEField" name="hidden">Built while hidden.
+Line two.
+Line three.
+Line four.
+Line five.</textarea>
+	</div>
+
+	<div class="Inputfield" id="fx-lang">
+		<label>Multi-language (one textarea per language)</label>
+		<textarea id="ta-lang-default" class="InputfieldMaxWidth InputfieldSimpleMDEField" name="body">Default language.</textarea>
+		<textarea id="ta-lang-es" class="InputfieldMaxWidth InputfieldSimpleMDEField" name="body__1234">Segunda lengua.</textarea>
+	</div>
+
+	<div class="Inputfield" id="fx-dirty">
+		<label>Change tracking</label>
+		<textarea id="ta-dirty" class="InputfieldMaxWidth InputfieldSimpleMDEField" name="dirty">Start.</textarea>
+	</div>
+
+	<!-- Per-field configuration -->
+
+	<div class="Inputfield" id="fx-opt-fragment">
+		<label>Options: bare fragment</label>
+		<textarea id="ta-opt-fragment" class="InputfieldMaxWidth InputfieldSimpleMDEField" name="o1"
+			data-mde-options='"toolbar": ["bold"]'>Fragment.</textarea>
+	</div>
+
+	<div class="Inputfield" id="fx-opt-full">
+		<label>Options: complete JSON object</label>
+		<textarea id="ta-opt-full" class="InputfieldMaxWidth InputfieldSimpleMDEField" name="o2"
+			data-mde-options='{"toolbar": ["bold", "italic"]}'>Full object.</textarea>
+	</div>
+
+	<div class="Inputfield" id="fx-opt-nested">
+		<label>Options: fragment ending in a nested object</label>
+		<textarea id="ta-opt-nested" class="InputfieldMaxWidth InputfieldSimpleMDEField" name="o3"
+			data-mde-options='"renderingConfig": {"singleLineBreaks": false}'>Nested.</textarea>
+	</div>
+
+	<div class="Inputfield" id="fx-opt-bad">
+		<label>Options: invalid JSON (must fall back, not break)</label>
+		<textarea id="ta-opt-bad" class="InputfieldMaxWidth InputfieldSimpleMDEField" name="o4"
+			data-mde-options='"toolbar": ["bold",]'>Invalid.</textarea>
+	</div>
+
+	<!-- Repeater-shaped fixtures -->
+
+	<div class="InputfieldRepeater" id="fx-repeater">
+		<div class="InputfieldRepeaterItem" id="fx-rep-fullscreen">
+			<div class="Inputfield">
+				<label>Repeater item: fullscreen</label>
+				<textarea id="ta-fullscreen" class="InputfieldMaxWidth InputfieldSimpleMDEField" name="r1">Fullscreen.</textarea>
+			</div>
+		</div>
+		<div class="InputfieldRepeaterItem" id="fx-rep-sort">
+			<div class="Inputfield">
+				<label>Repeater item: detach and reinsert (sorting)</label>
+				<textarea id="ta-sort" class="InputfieldMaxWidth InputfieldSimpleMDEField" name="r2">Sort me.</textarea>
+			</div>
+		</div>
+		<div class="InputfieldRepeaterItem" id="fx-rep-remove">
+			<div class="Inputfield">
+				<label>Repeater item: deleted mid-suite</label>
+				<textarea id="ta-remove" class="InputfieldMaxWidth InputfieldSimpleMDEField" name="r3">Delete me.</textarea>
+			</div>
+		</div>
+	</div>
+
+	<!-- Filled in at runtime by the AJAX-injection tests. -->
+	<div id="fx-ajax-target"></div>
+
+</form>
+</div>
+
+<script src="../../../../wire/modules/Jquery/JqueryCore/JqueryCore.js"></script>
+<script src="pw-stub.js"></script>
+<script src="../easymde/easymde.min.js"></script>
+<script src="../InputfieldSimpleMDE.js"></script>
+<script src="suite.js"></script>
+
+</body>
+</html>
