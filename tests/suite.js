@@ -499,6 +499,75 @@
 	});
 
 	// ====================================================================
+	// Editor height
+	// ====================================================================
+
+	describe('Editor height');
+
+	/** The scroller's starting height — what the field's Rows setting drives. */
+	function startHeight(id) {
+		var cm = editorOf(id).codemirror;
+		return parseFloat(cm.getScrollerElement().style.minHeight) || 0;
+	}
+
+	function lineHeight(id) {
+		return editorOf(id).codemirror.defaultTextHeight();
+	}
+
+	it('starts a field at the height its Rows setting asks for', async function() {
+		// rows was rendered on the textarea and offered on every config screen,
+		// but did nothing: the library set min-height 300px inline and the
+		// module's CSS capped the same element at 300px, freezing every editor
+		// at exactly 300 whatever the field asked for.
+		document.getElementById('fx-rows-3').scrollIntoView();
+		await sleep(300);
+
+		var expected = 3 * lineHeight('ta-rows-3');
+        var actual = startHeight('ta-rows-3');
+		ok(Math.abs(actual - expected) <= 2,
+			'rows=3 should start at about ' + Math.round(expected) + 'px, got ' + actual + 'px');
+	});
+
+	it('scales with the number of rows', async function() {
+		document.getElementById('fx-rows-10').scrollIntoView();
+		await sleep(300);
+
+		var three = startHeight('ta-rows-3');
+		var ten = startHeight('ta-rows-10');
+		ok(ten > three, 'rows=10 (' + ten + 'px) should be taller than rows=3 (' + three + 'px)');
+
+		var ratio = ten / three;
+		ok(ratio > 3.0 && ratio < 3.7,
+			'rows=10 should be about 10/3 the height of rows=3, ratio was ' + ratio.toFixed(2));
+	});
+
+	it('does not clip a field configured taller than the growth cap', async function() {
+		// rows=25 asks for more than the 300px cap. Without raising the cap the
+		// field would render shorter than it was configured for — min-height
+		// beats max-height on the scroller, but the wrapper would still clip.
+		document.getElementById('fx-rows-25').scrollIntoView();
+		await sleep(300);
+
+		var start = startHeight('ta-rows-25');
+		ok(start > 300, 'rows=25 should start past the default cap, got ' + start + 'px');
+
+		var wrapper = editorOf('ta-rows-25').codemirror.getWrapperElement();
+		var cap = parseFloat(getComputedStyle(wrapper).maxHeight);
+		ok(cap >= start, 'the cap (' + cap + 'px) must clear the starting height (' + start + 'px)');
+	});
+
+	it('leaves the library default alone when no rows are set', function() {
+		// Nothing to honour, so nothing is imposed.
+		eq(startHeight('ta-rows-none'), 300, 'scroller min-height without a rows attribute');
+	});
+
+	it('keeps the growth cap for an ordinary field', function() {
+		var wrapper = editorOf('ta-rows-3').codemirror.getWrapperElement();
+		eq(Math.round(parseFloat(getComputedStyle(wrapper).maxHeight)), 300,
+			'a small field should still stop growing at the default cap');
+	});
+
+	// ====================================================================
 	// Heading scale
 	// ====================================================================
 

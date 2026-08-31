@@ -44,6 +44,26 @@ For images, [Image Tags](https://processwire.com/modules/textformatter-image-tag
 or [Hanna Code](https://processwire.com/modules/process-hanna-code/) work well
 alongside it.
 
+## Editor height
+
+The field's **Rows** setting, on the Input tab, sets how tall the editor starts.
+It behaves like a textarea's rows: the editor opens at that height and grows
+with its content, up to a cap of 300px.
+
+Before version 2.0.0 the Rows setting did nothing — the editor was frozen at
+300px whatever the field asked for, which is why short fields such as a field
+description always looked oversized.
+
+To change the cap, or to set an explicit height and ignore Rows entirely, use
+the options below:
+
+```
+"minHeight": "120px"
+"maxHeight": "200px"
+```
+
+`maxHeight` fixes the height and makes the editor scroll rather than grow.
+
 ## Configuration
 
 By default the field needs no configuration and none is required to keep working
@@ -236,6 +256,11 @@ Two things to be aware of if you have customised it:
   browser window, which no other part of a fixed-width admin field does.
   SimpleMDE never styled heading sizes at all. Headings are now 1.6em down to
   1em, proportional to the field's own text and stable at any window size.
+- The field's Rows setting now sets the editor's starting height. It was
+  rendered on the textarea and offered on every config screen, but the editor
+  ignored it: the library set `min-height: 300px` inline and the module's CSS
+  capped the same element at 300px, freezing every editor at exactly 300px. A
+  three-row field description got the same box as a body field.
 - Stopped fetching FontAwesome from a third-party CDN. The library only ever
   recognised FontAwesome loaded from `maxcdn.bootstrapcdn.com`, so a locally
   hosted copy never counted and it appended a `<link>` to that CDN on every

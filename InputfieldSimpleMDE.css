@@ -7,10 +7,17 @@
  * load order — the fullscreen z-index below is exactly that case.
  */
 
-/* Cap the editing area; the fields are markdown, not manuscripts. */
+/**
+ * Cap the editing area; the fields are markdown, not manuscripts.
+ *
+ * A variable rather than a constant because the field's Rows setting drives the
+ * starting height, and a field asking for more rows than this would otherwise be
+ * clipped below the size it was configured for. InputfieldSimpleMDE.js raises
+ * the cap on those, and only those.
+ */
 .EasyMDEContainer .CodeMirror,
 .EasyMDEContainer .CodeMirror-scroll {
-	max-height: 300px;
+	max-height: var(--mde-max-height, 300px);
 }
 
 .EasyMDEContainer .CodeMirror-fullscreen,

@@ -68,6 +68,13 @@
 
 	var CHANGE_DELAY = 250; // debounce for the ProcessWire dirty-state ping
 
+	// Matches the default in InputfieldSimpleMDE.css. The editor grows with its
+	// content up to here; a field configured for more rows than this raises it.
+	var DEFAULT_CAP = 300;
+
+	// .EasyMDEContainer .CodeMirror padding, top + bottom.
+	var WRAPPER_PADDING = 20;
+
 	var built = 0, refreshed = 0, failed = 0, badConfig = 0, flushed = 0;
 	var seen = null;     // IntersectionObserver, when supported
 	var queued = false;  // rAF scheduled
@@ -183,6 +190,53 @@
 	}
 
 	/**
+	 * Make the field's Rows setting mean something.
+	 *
+	 * ProcessWire renders rows="n" on the textarea and every Inputfield config
+	 * screen offers it, but the editor ignored it completely: the library sets
+	 * min-height 300px inline on the scroller and the module's CSS capped the
+	 * same element at 300px, so every editor was frozen at exactly 300px whatever
+	 * the field asked for. A two-line field description got the same box as a
+	 * body field.
+	 *
+	 * Rows now sets where the editor starts; it still grows with its content up
+	 * to the cap. Measured from CodeMirror's own line height rather than a
+	 * hardcoded number, so it follows the admin theme's font rather than
+	 * guessing at it.
+	 *
+	 * Called again when a hidden editor first becomes visible, because
+	 * defaultTextHeight() cannot measure inside a hidden container and returns a
+	 * placeholder there.
+	 */
+	function applyRowsHeight(cm) {
+		var el = cm.getTextArea ? cm.getTextArea() : null;
+		if(!el) return;
+
+		var rows = parseInt(el.getAttribute('rows'), 10);
+		if(!rows || rows < 1) return; // no rows set: leave the library's default
+
+		var line = cm.defaultTextHeight();
+		if(!line || line < 2) return; // not measurable yet; the next refresh retries
+
+		var content = Math.round(rows * line);
+		var scroller = cm.getScrollerElement();
+		var target = content + 'px';
+		if(scroller.style.minHeight === target) return; // already correct
+
+		scroller.style.minHeight = target;
+
+		// The cap has to clear the starting height, or a field configured for
+		// more rows than the cap would be clipped below its own setting.
+		var container = cm.getWrapperElement().parentNode;
+		if(container && container.style) {
+			var total = content + WRAPPER_PADDING;
+			if(total > DEFAULT_CAP) container.style.setProperty('--mde-max-height', total + 'px');
+		}
+
+		cm.refresh();
+	}
+
+	/**
 	 * Tell ProcessWire the field is dirty.
 	 *
 	 * Without this the editor is invisible to core: inputfields.js watches for a
@@ -234,6 +288,7 @@
 
 		// Built hidden means measured hidden. Watch for it coming on screen.
 		instance.codemirror.refresh();
+		applyRowsHeight(instance.codemirror);
 		watch(el);
 
 		return instance;
@@ -260,7 +315,13 @@
 				for(var i = 0; i < entries.length; i++) {
 					if(!entries[i].isIntersecting) continue;
 					var cm = entries[i].target.CodeMirror;
-					if(cm) { cm.refresh(); refreshed++; }
+					if(cm) {
+						cm.refresh();
+						// Line height is only measurable now, so a rows-based
+						// height built while hidden is applied here.
+						applyRowsHeight(cm);
+						refreshed++;
+					}
 				}
 			});
 		}

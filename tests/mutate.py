@@ -40,6 +40,20 @@ MUTATIONS = [
     ("FontAwesome CDN download left enabled", JS,
      "\t\tautoDownloadFontAwesome: false,", "\t\t/* left to the library */", "js"),
 
+    # Disables the feature itself rather than one call site: applyRowsHeight is
+    # called from both build() and the IntersectionObserver, so removing either
+    # alone leaves the other to do the work.
+    ("rows setting ignored (the old fixed-300px behaviour)", JS,
+     "\t\tvar rows = parseInt(el.getAttribute('rows'), 10);",
+     "\t\tvar rows = 0; // feature disabled by mutation test", "js"),
+
+    ("growth cap not raised for a tall field", JS,
+     "\t\t\tif(total > DEFAULT_CAP) container.style.setProperty('--mde-max-height', total + 'px');",
+     "\t\t\tif(false) container.style.setProperty('--mde-max-height', total + 'px');", "js"),
+
+    ("cap made a constant again", CSS,
+     "\tmax-height: var(--mde-max-height, 300px);", "\tmax-height: 300px;", "js"),
+
     ("no change bridge", JS,
      "\t\tbridgeChanges(el, instance);", "\t\t/* bridge removed */", "js"),
 
