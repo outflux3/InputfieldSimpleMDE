@@ -75,6 +75,13 @@
 	// .EasyMDEContainer .CodeMirror padding, top + bottom.
 	var WRAPPER_PADDING = 20;
 
+	// Detected like every other capability in this file. It matters more than
+	// most: the dispatch sits outside build()'s try/catch and scan() has none, so
+	// a throw there escapes the whole scan pass and every remaining textarea in
+	// it goes unbuilt — one missing constructor would take out the module rather
+	// than the extension point.
+	var CAN_DISPATCH = typeof CustomEvent === 'function';
+
 	var built = 0, refreshed = 0, failed = 0, badConfig = 0, flushed = 0;
 	var seen = null;     // IntersectionObserver, when supported
 	var queued = false;  // rAF scheduled
@@ -291,6 +298,26 @@
 		applyRowsHeight(instance.codemirror);
 		watch(el);
 
+		// Extension point. Editors are built from a MutationObserver, so a module
+		// that wants to add a toolbar button cannot know when — or how often — that
+		// happens: an AJAX repeater item, a cloned item and a language tab each
+		// produce another one, long after any other module has finished loading.
+		// An event has no ordering problem, where a registration API would need a
+		// retro-fit pass over editors already built. Bubbles, so one delegated
+		// listener on the document covers every field on the page.
+		//
+		// Deliberately NOT wrapped in try/catch: dispatchEvent does not propagate a
+		// listener's exception to the dispatcher — the browser reports it to
+		// window.onerror and returns normally — so a guard here would be dead code
+		// implying a protection it does not provide. A throwing listener cannot stop
+		// the editor being built, and the suite checks that rather than assuming it.
+		if(CAN_DISPATCH) {
+			el.dispatchEvent(new CustomEvent('simplemde:built', {
+				bubbles: true,
+				detail: { instance: instance, element: el }
+			}));
+		}
+
 		return instance;
 	}
 
@@ -450,6 +477,38 @@
 
 	window.InputfieldSimpleMDE = {
 		scan: function() { return scan(document); },
+		/**
+		 * Every editor built so far, as {instance, element} pairs.
+		 *
+		 * The event only reaches listeners registered before the editor was
+		 * built, and the page-load editors are built during the initial scan —
+		 * so a module registering inside $(document).ready(), which is the usual
+		 * ProcessWire pattern, receives nothing for the fields already on the
+		 * page and only starts hearing about AJAX-loaded ones. That failure is
+		 * quiet and confusing: the feature appears inside repeater items and
+		 * never on ordinary fields.
+		 *
+		 * Pair this with the event to cover both:
+		 *
+		 *   document.addEventListener('simplemde:built', function(e) {
+		 *     enhance(e.detail.instance, e.detail.element);
+		 *   });
+		 *   InputfieldSimpleMDE.editors().forEach(function(ed) {
+		 *     enhance(ed.instance, ed.element);
+		 *   });
+		 *
+		 * Entries carry the same pair the event puts in its detail. Note that is
+		 * the DETAIL, not the event — a handler written to take an event cannot
+		 * be passed one of these directly.
+		 */
+		editors: function() {
+			var out = [];
+			for(var i = 0; i < tracked.length; i++) {
+				var el = tracked[i];
+				if(el.simplemdeInstance) out.push({ instance: el.simplemdeInstance, element: el });
+			}
+			return out;
+		},
 		instance: function(el) {
 			if(typeof el === 'string') el = document.getElementById(el);
 			return el ? el.simplemdeInstance || null : null;

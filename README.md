@@ -209,6 +209,67 @@ constructs an editor on the field description textarea itself.
 **Multi-language fields.** Each language renders its own textarea and gets its own
 editor, with the field's configured options.
 
+**Adding a toolbar button from another module.** Each editor fires a
+`simplemde:built` event on its own textarea as soon as it is constructed. The
+event bubbles, so one delegated listener covers every field on the page:
+
+```js
+function enhance(mde, el) {
+    // mde = the EasyMDE object, el = the textarea it was built on
+    var button = document.createElement('button');
+    button.className = 'my-module-button';
+    button.title = 'Insert a token';
+    button.textContent = '\u2726';
+    button.onclick = function() { mde.codemirror.replaceSelection('[[token]]'); };
+    mde.gui.toolbar.appendChild(button);
+}
+
+// Editors built from now on.
+document.addEventListener('simplemde:built', function(e) {
+    enhance(e.detail.instance, e.detail.element);
+});
+
+// Editors that already existed when this script ran.
+InputfieldSimpleMDE.editors().forEach(function(ed) {
+    enhance(ed.instance, ed.element);
+});
+```
+
+**Both lines are needed, and the second is the one people miss.** An event only
+reaches listeners that were already registered, and the editors on a normal page
+are built during this module's own start-up. A module that registers inside
+`$(document).ready()` — the usual ProcessWire pattern — is too late for those,
+and hears only about editors created afterwards. The result is a feature that
+appears inside AJAX-loaded repeater items and silently never on ordinary fields,
+which is a miserable thing to debug.
+
+`InputfieldSimpleMDE.editors()` returns `{instance, element}` for every editor
+built so far — the same pair the event carries in its `detail`, which is why both
+paths above can hand the same two arguments to one function.
+
+Register the listener before calling `editors()`, as above, so an editor built
+between the two lines is caught rather than missed. It may then be enhanced
+twice, so guard with a class or flag if your code is not idempotent.
+
+Do not scan the DOM on a timer instead. Editors are built from a
+`MutationObserver`, so an AJAX-loaded repeater item, a cloned item or an unopened
+language tab each produce another one at a moment nothing else can predict.
+
+A few details worth knowing:
+
+- **jQuery works too.** ProcessWire bundles jQuery 1.12, which copies `detail`
+  onto its event object, so `$(document).on('simplemde:built', fn)` gives you
+  `e.detail.instance` directly with no `originalEvent` unwrapping.
+- **A listener that throws cannot break anything.** `dispatchEvent` does not
+  propagate a listener's exception to the dispatcher, so the error surfaces in
+  the console and both that editor and the rest of the page's editors are built
+  as normal. That is the browser's guarantee rather than this module's, and the
+  test suite checks it holds.
+- **The event fires after the editor is fully set up**, including its height, so
+  measurements taken in a listener are the final ones.
+- **A button appended this way inherits EasyMDE's toolbar behaviour**, including
+  being disabled while the preview is open.
+
 ## Upgrading from 1.x
 
 Nothing to do beyond replacing the module folder and running Modules → Refresh.

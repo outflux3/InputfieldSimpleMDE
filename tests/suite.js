@@ -336,6 +336,158 @@
 	// AJAX and the repeater regression
 	// ====================================================================
 
+	describe('The simplemde:built extension point');
+
+	it('fires simplemde:built once per editor, with the instance', async function() {
+		var seen = [];
+		function onBuilt(e) { seen.push(e); }
+		document.addEventListener('simplemde:built', onBuilt);
+		try {
+			target().appendChild(makeField('evt-one', { label: 'Event probe' }));
+			await waitFor(function() { return editorOf('ta-evt-one'); }, 'ta-evt-one to get an editor');
+			var mine = seen.filter(function(e) { return e.target && e.target.id === 'ta-evt-one'; });
+			eq(mine.length, 1, 'simplemde:built events for ta-evt-one');
+			ok(mine[0].detail && mine[0].detail.instance === editorOf('ta-evt-one'),
+				'detail.instance is the editor for that textarea');
+			ok(mine[0].detail.element === document.getElementById('ta-evt-one'),
+				'detail.element is the textarea');
+			ok(mine[0].bubbles, 'the event bubbles, so one document listener covers every field');
+		} finally {
+			document.removeEventListener('simplemde:built', onBuilt);
+		}
+	});
+
+	it('fires for an editor injected later, which is the whole point', async function() {
+		// A registration API would miss this one: by the time the item arrives, any
+		// other module has long since finished loading.
+		var seen = 0;
+		function onBuilt(e) { if(e.target && e.target.id === 'ta-evt-late') seen++; }
+		document.addEventListener('simplemde:built', onBuilt);
+		try {
+			target().appendChild(makeField('evt-late', { label: 'Late event probe', hidden: true }));
+			await waitFor(function() { return editorOf('ta-evt-late'); }, 'ta-evt-late to get an editor');
+			eq(seen, 1, 'simplemde:built events for a hidden, late-injected field');
+		} finally {
+			document.removeEventListener('simplemde:built', onBuilt);
+		}
+	});
+
+	// Checks a guarantee this module RELIES on rather than one it implements:
+	// dispatchEvent does not propagate a listener's exception to the dispatcher.
+	// Worth a test precisely because it is the reason no try/catch is needed.
+	//
+	// Asserting on a SIBLING, not just on the field whose listener threw. The
+	// dispatch is the last statement in build(), so that field keeps its editor
+	// even if the exception did propagate — the earlier version of this test
+	// would have passed either way. What propagation would actually cost is the
+	// rest of the scan pass: build() throws, scan()'s loop unwinds, and every
+	// later textarea in the same batch goes unbuilt.
+	it('a listener that throws does not stop other editors being built', async function() {
+		function boom(e) {
+			if(e.target && e.target.id === 'ta-evt-boom') throw new Error('deliberate listener failure');
+		}
+		document.addEventListener('simplemde:built', boom);
+		try {
+			// One tick, so all three are built by a single scan pass.
+			var frag = document.createDocumentFragment();
+			frag.appendChild(makeField('evt-before', { label: 'Before the thrower' }));
+			frag.appendChild(makeField('evt-boom', { label: 'Throwing listener' }));
+			frag.appendChild(makeField('evt-after', { label: 'After the thrower' }));
+			target().appendChild(frag);
+
+			await waitFor(function() { return editorOf('ta-evt-after'); },
+				'ta-evt-after to be built despite an earlier listener throwing');
+
+			ok(editorOf('ta-evt-before'), 'the field before the thrower should be built');
+			ok(editorOf('ta-evt-boom'), 'the field whose listener threw should still be built');
+			ok(editorOf('ta-evt-after'), 'the field after the thrower should be built');
+		} finally {
+			document.removeEventListener('simplemde:built', boom);
+		}
+	});
+
+	it('survives an environment without CustomEvent', function() {
+		// The dispatch sits outside build()'s try/catch and scan() has none, so a
+		// throw there escapes the whole scan pass. Simulating a missing
+		// constructor took 38 of 50 tests down before this was guarded, which is
+		// why it is feature-detected rather than assumed.
+		ok(typeof CustomEvent === 'function',
+			'this browser has CustomEvent, so the guarded path is not exercised here');
+		ok(editorOf('ta-visible'), 'editors build normally when it is available');
+	});
+
+	it('lets a listener registering late catch up on editors already built', async function() {
+		// The event only reaches listeners present when the editor was built, and
+		// the page-load editors are built during the initial scan. A module
+		// registering inside $(document).ready() — the usual ProcessWire pattern —
+		// hears nothing about them. Without a way to enumerate, the feature shows
+		// up inside AJAX-loaded repeater items and silently never on normal fields.
+		var late = 0;
+		document.addEventListener('simplemde:built', function() { late++; });
+		eq(late, 0, 'a listener registering now should receive no events for existing editors');
+
+		var editors = InputfieldSimpleMDE.editors();
+		atLeast(editors.length, 5, 'editors() should report the editors already built');
+
+		// Same shape as the event's detail, so one function handles both paths.
+		ok(editors[0].instance && editors[0].element, 'each entry carries instance and element');
+		eq(editors[0].instance, editors[0].element.simplemdeInstance,
+			'the instance belongs to its element');
+
+		var found = editors.filter(function(e) { return e.element.id === 'ta-visible'; });
+		eq(found.length, 1, 'a known page-load editor should appear exactly once');
+	});
+
+	it('supports the documented two-path pattern end to end', async function() {
+		// The exact shape the README tells module authors to write: one enhance
+		// function, reached both by the event and by the catch-up call. Written as
+		// a test because the first version of that example did not run — editors()
+		// returns the event's DETAIL, and the example passed those entries to a
+		// handler expecting an event.
+		var enhanced = [];
+		function enhance(mde, el) {
+			if(el.dataset.enhanced) return; // documented idempotence guard
+			el.dataset.enhanced = '1';
+			enhanced.push(el.id);
+			var button = document.createElement('button');
+			button.className = 'suite-probe-button';
+			button.onclick = function() { mde.codemirror.replaceSelection('[[t]]'); };
+			mde.gui.toolbar.appendChild(button);
+		}
+
+		function onBuilt(e) { enhance(e.detail.instance, e.detail.element); }
+		document.addEventListener('simplemde:built', onBuilt);
+		try {
+			InputfieldSimpleMDE.editors().forEach(function(ed) { enhance(ed.instance, ed.element); });
+			var caughtUp = enhanced.length;
+			atLeast(caughtUp, 5, 'the catch-up pass should reach the editors already built');
+
+			// and the event half, for one built afterwards
+			target().appendChild(makeField('doc-pattern', { label: 'Documented pattern' }));
+			await waitFor(function() { return editorOf('ta-doc-pattern'); }, 'ta-doc-pattern to be built');
+			await frame();
+
+			ok(enhanced.indexOf('ta-doc-pattern') !== -1, 'a later editor should be reached by the event');
+			eq(enhanced.length, caughtUp + 1, 'exactly one more, so neither path double-enhances');
+
+			var button = document.getElementById('fx-doc-pattern').querySelector('.suite-probe-button');
+			ok(button, 'the button should be in the toolbar');
+			button.click();
+			ok(editorOf('ta-doc-pattern').value().indexOf('[[t]]') !== -1,
+				'the button should act on its own editor');
+		} finally {
+			document.removeEventListener('simplemde:built', onBuilt);
+			// This test enhances EVERY editor on the page, so it has to put them
+			// back. Without this it inflates the toolbar counts that the
+			// configuration tests further down assert on — which is exactly how
+			// the pollution was found.
+			var added = document.querySelectorAll('.suite-probe-button');
+			for(var i = 0; i < added.length; i++) added[i].parentNode.removeChild(added[i]);
+			var flagged = document.querySelectorAll('[data-enhanced]');
+			for(var j = 0; j < flagged.length; j++) flagged[j].removeAttribute('data-enhanced');
+		}
+	});
+
 	describe('AJAX injection and the repeater regression');
 
 	it('builds an editor for a textarea injected after load', async function() {

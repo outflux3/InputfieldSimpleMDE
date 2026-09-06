@@ -54,6 +54,17 @@ MUTATIONS = [
     ("cap made a constant again", CSS,
      "\tmax-height: var(--mde-max-height, 300px);", "\tmax-height: 300px;", "js"),
 
+    ("simplemde:built event never fired", JS,
+     "\t\tif(CAN_DISPATCH) {", "\t\tif(false) {", "js"),
+
+    ("CustomEvent used without a guard", JS,
+     "\tvar CAN_DISPATCH = typeof CustomEvent === 'function';",
+     "\tvar CAN_DISPATCH = typeof __NoSuchCtor__ === 'function';", "js"),
+
+    ("editors() cannot see already-built editors", JS,
+     "\t\t\t\tif(el.simplemdeInstance) out.push({ instance: el.simplemdeInstance, element: el });",
+     "\t\t\t\tif(false) out.push({ instance: el.simplemdeInstance, element: el });", "js"),
+
     ("no change bridge", JS,
      "\t\tbridgeChanges(el, instance);", "\t\t/* bridge removed */", "js"),
 
