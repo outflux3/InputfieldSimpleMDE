@@ -293,6 +293,17 @@ Two things to be aware of if you have customised it:
 
 ## Changelog
 
+### 2.1.0
+
+- Added a `simplemde:built` event so another module can extend each editor as it
+  is created — adding a toolbar button, for example. Editors are built from a
+  `MutationObserver`, at moments nothing outside this module can predict, so an
+  event is the only thing that catches all of them.
+- Added `InputfieldSimpleMDE.editors()`, which reports the editors already built.
+  A listener registered inside `$(document).ready()` is too late for the fields
+  on the page, so without this the event would reach AJAX-loaded repeater items
+  and silently nothing else. See [Interoperability](#interoperability).
+
 ### 2.0.0
 
 - Replaced SimpleMDE 1.11.2 (unmaintained since 2017, bundling CodeMirror 5.15.2)
