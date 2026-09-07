@@ -325,6 +325,17 @@ Two things to be aware of if you have customised it:
 
 ## Changelog
 
+### 2.2.0
+
+- Bundled the [Markdown Image Picker](#markdown-image-picker), which replaces the
+  editor's "insert image" URL prompt with ProcessWire's own image selector —
+  browse the page's images, crop, rotate and resize, and get a Markdown
+  reference to the resulting variation. It ships alongside this module but is
+  **not installed automatically**: install it from the Modules screen if you
+  want it.
+- No change to the editor itself. This release exists so the bundled picker
+  reaches existing installations, which upgrade by version number.
+
 ### 2.1.0
 
 - Added a `simplemde:built` event so another module can extend each editor as it

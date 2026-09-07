@@ -23,7 +23,7 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
 	public static function getModuleInfo() {
 		return array(
 			'title' 	=> 'Simple Markdown Editor',
-			'version' 	=> 210,
+			'version' 	=> 220,
 			'summary' 	=> 'Markdown editor (EasyMDE) for ProcessWire',
 			'icon' 		=> 'star',
 			'author'   	=> 'Marc W. | @Macrura (community), @outflux3 (Github), https://nibiri.com',
