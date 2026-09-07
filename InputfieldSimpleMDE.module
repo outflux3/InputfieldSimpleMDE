@@ -22,12 +22,14 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
 
 	public static function getModuleInfo() {
 		return array(
-			'title' => 'Simple Markdown Editor',
-			'version' => 210,
-			'summary' => 'Markdown editor (EasyMDE) for ProcessWire',
-			'icon' => 'star',
-			'requires' => 'ProcessWire>=3.0.0, PHP>=5.4.0',
-			'autoload' => 'template=admin',
+			'title' 	=> 'Simple Markdown Editor',
+			'version' 	=> 210,
+			'summary' 	=> 'Markdown editor (EasyMDE) for ProcessWire',
+			'icon' 		=> 'star',
+			'author'   	=> 'Marc W. | @Macrura (community), @outflux3 (Github), https://nibiri.com',
+			'href'		=> 'https://processwire.com/talk/topic/13486-inputfieldsimplemde/',
+			'requires' 	=> 'ProcessWire>=3.0.0, PHP>=5.4.0',
+			'autoload' 	=> 'template=admin',
 			);
 	}
 
