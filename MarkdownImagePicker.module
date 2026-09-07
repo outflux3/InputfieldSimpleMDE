@@ -1,0 +1,71 @@
+<?php namespace ProcessWire;
+
+/**
+ * Markdown Image Picker
+ *
+ * Replaces the Markdown editor's "insert image" prompt — which asks for a URL —
+ * with ProcessWire's own image selector, the same one CKEditor and TinyMCE use.
+ * Browse the page's images, crop, rotate and resize, and get a Markdown
+ * reference to the resulting variation.
+ *
+ * WHY THIS WORKS WITHOUT ANY IMAGE CODE OF ITS OWN
+ * ProcessPageEditImageSelect does everything, and its resize step writes a real
+ * variation file and hands back that file's URL. The chosen crop and size are
+ * therefore part of the URL, which is exactly what Markdown can express:
+ *
+ *     ![description](/site/assets/files/1068/photo.400x0-is.jpg)
+ *
+ * So there is no need for width attributes, inline HTML or a custom syntax for
+ * the ordinary case.
+ *
+ * @author Marc W. | @Macrura (community), @outflux3 (Github), https://nibiri.com
+ * @license MIT (see LICENSE)
+ *
+ */
+
+class MarkdownImagePicker extends WireData implements Module {
+
+	public static function getModuleInfo() {
+		return array(
+			'title'     => 'Markdown Image Picker',
+			'version'   => 100,
+			'summary'   => "ProcessWire's image picker for Markdown fields, in place of the editor's URL prompt.",
+			'icon'      => 'picture-o',
+			'author'    => 'Marc W. | @Macrura (community), @outflux3 (Github), https://nibiri.com',
+			'requires'  => 'InputfieldSimpleMDE, ProcessWire>=3.0.0',
+			'autoload'  => 'template=admin',
+			);
+	}
+
+	/**
+	 * Load assets for every admin request.
+	 *
+	 * Deliberately from init() rather than a render hook, for the same reason
+	 * InputfieldSimpleMDE does it: an editor can appear at any time from an
+	 * AJAX-loaded repeater item, long after rendering is over, and the script
+	 * has to already be on the page when it does.
+	 *
+	 */
+	public function init() {
+
+		$modules = $this->wire()->modules;
+		$config = $this->wire()->config;
+
+		// pwModalWindow(), which is what opens the picker
+		/** @var JqueryUI $jQueryUI */
+		$jQueryUI = $modules->get('JqueryUI');
+		$jQueryUI->use('modal');
+
+		$config->js($this->className(), array(
+			'labels' => array(
+				'selectImage'  => $this->_('Select Image'),
+				'insertImage'  => $this->_('Insert'),
+				'selectAnother'=> $this->_('Select another'),
+				'cancel'       => $this->_('Cancel'),
+				'saving'       => $this->_('Saving'),
+			),
+		));
+
+		$modules->loadModuleFileAssets($this);
+	}
+}

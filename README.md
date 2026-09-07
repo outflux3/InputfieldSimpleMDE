@@ -197,6 +197,38 @@ language tabs, fullscreen in other admin themes, and the upgrade path.
 
 See [tests/README.md](tests/README.md) for how it works.
 
+## Markdown Image Picker
+
+Bundled alongside this module but **not installed by default**. Install it from
+Modules → Refresh if you want it; it does nothing until you do.
+
+It replaces the editor's image button — which prompts for a URL — with
+ProcessWire's own image selector, the same one CKEditor and TinyMCE use. Browse
+the page's images, crop, rotate, resize, and get a Markdown reference to the
+resulting variation:
+
+```
+![A test photo](/site/assets/files/1068/photo.400x0-is.jpg)
+```
+
+The size and crop are carried by the variation's filename, because ProcessWire's
+resize step writes a real file. So plain Markdown expresses them and there is no
+need for width attributes or inline HTML. Ticking "link to larger version"
+produces `[![alt](small)](large)`.
+
+Notes:
+
+- **Alt text** comes from the image's description field.
+- **Captions, classes and alignment are dropped.** Markdown has no syntax for
+  them, and smuggling in inline HTML would be a worse default than losing them.
+- **Fields with a custom toolbar that omits the image button are left alone** —
+  the picker replaces that button, it does not add one you did not ask for.
+- **The button only appears where a page can be resolved**, so it is absent on
+  screens with no page context. It never appears on the Field Descriptions
+  Extended description editor, which builds its own editor outside this module.
+- The keyboard shortcut (`Cmd-Alt-I` / `Ctrl-Alt-I`) is rebound too, so it opens
+  the picker rather than the old URL prompt.
+
 ## Interoperability
 
 **Other modules calling `new SimpleMDE(...)`.** The library this module loads is
