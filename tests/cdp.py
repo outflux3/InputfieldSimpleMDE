@@ -142,7 +142,7 @@ class WebSocket:
 # --------------------------------------------------------------------- cdp
 
 class Browser:
-    def __init__(self, chrome, timeout=60, keep_open=False):
+    def __init__(self, chrome, timeout=60, keep_open=False, extra_args=None):
         self.timeout = timeout
         self.profile = tempfile.mkdtemp(prefix="mde-tests-")
         self.keep_open = keep_open
@@ -167,6 +167,7 @@ class Browser:
                 "--window-size=1280,2400",
                 "--remote-debugging-port=0",
                 "--user-data-dir=%s" % self.profile,
+            ] + list(extra_args or []) + [
                 "about:blank",
             ],
             stdout=subprocess.DEVNULL,
@@ -207,6 +208,12 @@ class Browser:
                 pass
             time.sleep(0.1)
         raise IOError("no debuggable page target appeared")
+
+    def cookie(self, name, value, domain, path="/"):
+        """Set a cookie, so a driver can reach pages behind a login."""
+        self.call("Network.setCookie", {
+            "name": name, "value": value, "domain": domain, "path": path,
+        })
 
     def call(self, method, params=None):
         self.next_id += 1
