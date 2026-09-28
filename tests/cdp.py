@@ -288,8 +288,8 @@ class Browser:
 GREEN, RED, GREY, DIM, RESET = "\033[32m", "\033[31m", "\033[90m", "\033[2m", "\033[0m"
 
 
-def paint(s, colour):
-    return s if not sys.stdout.isatty() else colour + s + RESET
+def paint(s, color):
+    return s if not sys.stdout.isatty() else color + s + RESET
 
 
 def find_chrome(explicit):

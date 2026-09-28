@@ -43,7 +43,7 @@ MUTATIONS = [
     # Disables the feature itself rather than one call site: applyRowsHeight is
     # called from both build() and the IntersectionObserver, so removing either
     # alone leaves the other to do the work.
-    ("rows setting ignored (the old fixed-300px behaviour)", JS,
+    ("rows setting ignored (the old fixed-300px behavior)", JS,
      "\t\tvar rows = parseInt(el.getAttribute('rows'), 10);",
      "\t\tvar rows = 0; // feature disabled by mutation test", "js"),
 
@@ -122,7 +122,7 @@ MUTATIONS = [
      '"easymde/easymde.min.js?v=$version"', '"easymde/easymde.min.jsx?v=$version"', "php"),
 ]
 
-# Mutations that provably cannot change behaviour. Listed rather than deleted,
+# Mutations that provably cannot change behavior. Listed rather than deleted,
 # so the next person does not spend an afternoon rediscovering why.
 EQUIVALENT = {
     "no double-build guard":

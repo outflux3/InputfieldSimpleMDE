@@ -40,9 +40,27 @@ Alternatively, format it at output time:
 echo $sanitizer->entitiesMarkdown($page->your_field, ['fullMarkdown' => true]);
 ```
 
-For images, [Image Tags](https://processwire.com/modules/textformatter-image-tags/)
-or [Hanna Code](https://processwire.com/modules/process-hanna-code/) work well
-alongside it.
+### Images
+
+Install the bundled [Markdown Image Picker](#markdown-image-picker) and insert
+images from the editor's toolbar. It writes an ordinary Markdown reference to a
+real image variation, so nothing else is needed for the common case:
+
+```
+![A field of poppies](/site/assets/files/1068/poppies.400x0-is.jpg)
+```
+
+That is a link to one specific file. It is concrete and portable — it survives
+being copied elsewhere and needs no textformatter beyond the Markdown one — but
+it does not follow the image if the image changes. Re-uploading over the same
+filename into an image field with *overwrite* enabled discards the old
+variations, which breaks any Markdown link pointing at one.
+
+Where that matters, or where you need markup Markdown cannot express — captions,
+`<figure>`, responsive `srcset` — a tag-based approach still earns its place
+next to the picker: [Hanna Code](https://processwire.com/modules/process-hanna-code/)
+for arbitrary markup, or [Image Tags](https://processwire.com/modules/textformatter-image-tags/)
+for references resolved at output time. Most fields will want neither.
 
 ## Editor height
 
@@ -105,7 +123,7 @@ toolbar picks up its styling automatically, with nothing to configure.
 The module sets `autoDownloadFontAwesome: false` deliberately. Left unset, the
 library looks for a stylesheet whose href contains
 `//maxcdn.bootstrapcdn.com/font-awesome/` and, not finding one, appends a
-`<link>` to that CDN. It only recognises FontAwesome served from that single
+`<link>` to that CDN. It only recognizes FontAwesome served from that single
 host, so a locally hosted copy — which is what every ProcessWire admin theme
 uses — never satisfies the check, and it fires on every page. It also runs per
 editor, so a page with ten Markdown fields appended ten of them.
@@ -136,7 +154,7 @@ turn the bundled one on. If you do, do it knowingly:
 "spellChecker": true
 ```
 
-## How the editor gets initialised
+## How the editor gets initialized
 
 Worth knowing if you are debugging, because it does not work the way most
 ProcessWire inputfields do.
@@ -154,7 +172,7 @@ item and even an AJAX-collapsed one still takes its inner fields through
 way regardless. The repeater bug was actually fixed by the rewrite of
 `InputfieldSimpleMDE.js`: the old double-init guard compared jQuery `.data()`
 against the string `'true'` after `.data()` had already coerced it to a boolean,
-so it never held, and initialisation depended on guessing which ProcessWire
+so it never held, and initialization depended on guessing which ProcessWire
 event would fire and when.
 
 The trade-off is that EasyMDE loads on every admin request, not only on pages
@@ -299,7 +317,7 @@ A few details worth knowing:
   test suite checks it holds.
 - **The event fires after the editor is fully set up**, including its height, so
   measurements taken in a listener are the final ones.
-- **A button appended this way inherits EasyMDE's toolbar behaviour**, including
+- **A button appended this way inherits EasyMDE's toolbar behavior**, including
   being disabled while the preview is open.
 
 ## Upgrading from 1.x
@@ -308,7 +326,7 @@ Nothing to do beyond replacing the module folder and running Modules → Refresh
 Field settings, stored content and the default appearance are unchanged; existing
 fields keep working without being touched.
 
-Two things to be aware of if you have customised it:
+Two things to be aware of if you have customized it:
 
 - **Custom CSS.** EasyMDE wraps the editor in `.EasyMDEContainer` and scopes its
   own rules to it, so a bare `.CodeMirror { ... }` override of yours now loses on
@@ -377,14 +395,14 @@ Two things to be aware of if you have customised it:
   capped the same element at 300px, freezing every editor at exactly 300px. A
   three-row field description got the same box as a body field.
 - Stopped fetching FontAwesome from a third-party CDN. The library only ever
-  recognised FontAwesome loaded from `maxcdn.bootstrapcdn.com`, so a locally
+  recognized FontAwesome loaded from `maxcdn.bootstrapcdn.com`, so a locally
   hosted copy never counted and it appended a `<link>` to that CDN on every
   page, once per editor. SimpleMDE did the same, so this predates the fork.
 - Added a `LICENSE` for the module itself (MIT).
 
 ### 1.1.0
 
-- Fixed initialisation inside repeaters.
+- Fixed initialization inside repeaters.
 
 ## License
 

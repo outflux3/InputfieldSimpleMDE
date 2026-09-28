@@ -70,7 +70,7 @@ class InputfieldSimpleMDE extends InputfieldTextarea {
 		 * bug was actually fixed by the rewrite of InputfieldSimpleMDE.js — the
 		 * old double-init guard compared jQuery .data() against the string
 		 * 'true' after .data() had already coerced it to a boolean, so it never
-		 * held, and initialisation depended on guessing the right PW event.
+		 * held, and initialization depended on guessing the right PW event.
 		 *
 		 * It is kept because it is cheap and it removes a whole class of
 		 * ordering question, and because loadModuleFileAssets() is what

@@ -253,7 +253,7 @@
 
 		// The keyboard shortcut lives in CodeMirror's keymap, not on the button,
 		// so replacing the button alone would leave Cmd-Alt-I opening the old
-		// URL prompt — two behaviours for one action.
+		// URL prompt — two behaviors for one action.
 		var keymap = {};
 		keymap[/Mac/.test(navigator.platform) ? 'Cmd-Alt-I' : 'Ctrl-Alt-I'] = function() {
 			openPicker(cm, el);

@@ -17,7 +17,7 @@ php ../../../_dev-tests/mde-matrix.php run  # real admin render matrix
 ```
 
 Three things are left. They need a running browser, a real admin theme, and
-judgement about whether something *looks* right — none of which a test can
+judgment about whether something *looks* right — none of which a test can
 supply. Perhaps five minutes.
 
 ## 1. Fullscreen in an admin theme other than Uikit
@@ -38,7 +38,7 @@ Not covered at all, and a plausible source of stacking bugs — a modal is anoth
 stacking context wrapped around everything the fullscreen fix reasons about.
 
 - Edit a page in a modal from Lister, or via a page field's edit panel.
-- The editor initialises.
+- The editor initializes.
 - Fullscreen still clears the modal.
 
 ## 3. Upgrade path on an existing site

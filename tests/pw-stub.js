@@ -2,7 +2,7 @@
  * The parts of ProcessWire's admin JS the module actually interacts with.
  *
  * Only two things matter to InputfieldSimpleMDE, and both are reproduced here
- * verbatim in behaviour so the suite is testing the real contract rather than a
+ * verbatim in behavior so the suite is testing the real contract rather than a
  * convenient approximation:
  *
  *   1. Change tracking. Core delegates a 'change' listener and stamps

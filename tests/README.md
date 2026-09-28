@@ -27,9 +27,9 @@ the PHP one. No npm, no pip, no test framework.
 | `mutate.py` | Breaks the module deliberately and checks the suites notice. |
 | `MANUAL.md` | The short list of things only a real admin can prove. |
 
-The browser suite covers initialisation (visible, hidden, AJAX-injected,
+The browser suite covers initialization (visible, hidden, AJAX-injected,
 multi-language), the repeater regression, per-field configuration, change
-tracking, fullscreen stacking, and observer behaviour. The PHP suite covers the
+tracking, fullscreen stacking, and observer behavior. The PHP suite covers the
 markup contract the browser suite depends on — if the module stopped emitting
 `.InputfieldSimpleMDEField`, the browser suite would happily keep passing
 against fixtures that no longer resembled anything ProcessWire renders.
@@ -47,7 +47,7 @@ were fixed, and one of those fixes uncovered a genuine bug in the module (see
 "re-adoption" below).
 
 Two mutations are documented as *equivalent* — they provably cannot change
-behaviour, so they are listed in `mutate.py` rather than chased. Read that list
+behavior, so they are listed in `mutate.py` rather than chased. Read that list
 before concluding the suite has a hole.
 
 ## Things worth knowing before editing these tests
@@ -104,7 +104,7 @@ is why there is nothing to install.
 `pw-stub.js` reproduces two things from
 `wire/templates-admin/scripts/inputfields.js`: the delegated `change` handler
 that stamps `InputfieldStateChanged` on the enclosing `.Inputfield`, and the
-navigate-away confirmation that reads it. Both are copied in behaviour, not
+navigate-away confirmation that reads it. Both are copied in behavior, not
 approximated, because the change bridge exists specifically to satisfy them.
 
 If a ProcessWire upgrade changes those selectors, this stub is where the suite

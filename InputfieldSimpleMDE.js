@@ -38,7 +38,7 @@
 		 *
 		 * Left unset, the library looks for a stylesheet whose href contains
 		 * "//maxcdn.bootstrapcdn.com/font-awesome/" and, not finding one,
-		 * appends a <link> to that CDN. It only recognises FontAwesome served
+		 * appends a <link> to that CDN. It only recognizes FontAwesome served
 		 * from that one host, so a locally hosted copy — which is what every
 		 * ProcessWire admin theme uses — never counts, and the check fails on
 		 * every page. Worse, it runs per editor: a page with ten Markdown

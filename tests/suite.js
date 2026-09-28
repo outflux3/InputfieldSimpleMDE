@@ -282,10 +282,10 @@
 	});
 
 	// ====================================================================
-	// Initialisation
+	// Initialization
 	// ====================================================================
 
-	describe('Initialisation');
+	describe('Initialization');
 
 	it('builds an editor for a field visible at load', function() {
 		ok(editorOf('ta-visible'), 'ta-visible should have an instance');
@@ -709,7 +709,7 @@
 	});
 
 	it('leaves the library default alone when no rows are set', function() {
-		// Nothing to honour, so nothing is imposed.
+		// Nothing to honor, so nothing is imposed.
 		eq(startHeight('ta-rows-none'), 300, 'scroller min-height without a rows attribute');
 	});
 
@@ -778,10 +778,10 @@
 	});
 
 	// ====================================================================
-	// Observer behaviour
+	// Observer behavior
 	// ====================================================================
 
-	describe('Observer behaviour');
+	describe('Observer behavior');
 
 	it('does not rescan the document while you type', async function() {
 		// CodeMirror rewrites its own line elements on every keystroke. Without
@@ -907,7 +907,7 @@
 	it('never reaches out to a third-party CDN', function() {
 		// Left to itself the library appends a <link> to
 		// maxcdn.bootstrapcdn.com for FontAwesome, once per editor, on every
-		// page — it only recognises FontAwesome served from that exact host, so
+		// page — it only recognizes FontAwesome served from that exact host, so
 		// the admin's own local copy never satisfies the check. An outbound
 		// request from a client site's admin to a host nobody chose.
 		var links = document.querySelectorAll('link[href*="bootstrapcdn"], link[href*="maxcdn"]');
