@@ -349,6 +349,17 @@ Two things to be aware of if you have customized it:
 
 ## Changelog
 
+### 2.2.1
+
+- Documentation only. The images guidance now points at the bundled
+  [Markdown Image Picker](#markdown-image-picker) rather than a textformatter,
+  and suggests [Copy Markdown](https://processwire.com/modules/copy-markdown/)
+  for working from the images field. The previous recommendation of Image Tags
+  has been dropped: it has not been updated since 2016, renders images from the
+  wrong page when a field is formatted for any page other than the one being
+  viewed, and does not escape image descriptions into the `alt` attribute.
+- US spellings throughout the documentation and code comments.
+
 ### 2.2.0
 
 - Bundled the [Markdown Image Picker](#markdown-image-picker), which replaces the
