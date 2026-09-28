@@ -57,10 +57,16 @@ filename into an image field with *overwrite* enabled discards the old
 variations, which breaks any Markdown link pointing at one.
 
 Where that matters, or where you need markup Markdown cannot express — captions,
-`<figure>`, responsive `srcset` — a tag-based approach still earns its place
-next to the picker: [Hanna Code](https://processwire.com/modules/process-hanna-code/)
-for arbitrary markup, or [Image Tags](https://processwire.com/modules/textformatter-image-tags/)
-for references resolved at output time. Most fields will want neither.
+`<figure>`, responsive `srcset` — [Hanna Code](https://processwire.com/modules/process-hanna-code/)
+lets you put a tag in the text and resolve it to whatever markup you like at
+output time. Most fields will not need it.
+
+[Copy Markdown](https://processwire.com/modules/copy-markdown/) is a good
+companion if you prefer working from the images field itself: it adds an icon to
+each image that copies a ready-made Markdown string to the clipboard, including
+for individual variations. The picker is the faster route for inserting into the
+editor; Copy Markdown is handy when you are looking at the image field and want
+its Markdown without opening a dialog.
 
 ## Editor height
 
